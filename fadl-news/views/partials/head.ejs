@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> | <%= settings.site_name %></title>
+  <meta name="description" content="<%= description %>">
+  <meta name="keywords" content="<%= settings.site_keywords %>">
+  <meta name="author" content="<%= settings.site_name %>">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="<%= canonical %>">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="<%= title %>">
+  <meta property="og:description" content="<%= description %>">
+  <meta property="og:image" content="<%= ogImage || '' %>">
+  <meta property="og:url" content="<%= canonical %>">
+  <meta property="og:type" content="<%= ogType || 'website' %>">
+  <meta property="og:site_name" content="<%= settings.site_name %>">
+  <meta property="og:locale" content="ar_AR">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="<%= title %>">
+  <meta name="twitter:description" content="<%= description %>">
+  <meta name="twitter:image" content="<%= ogImage || '' %>">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
+  <!-- Google Fonts: Cairo -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Feather Icons -->
+  <script src="https://unpkg.com/feather-icons@4.29.2/dist/feather.min.js" defer></script>
+
+  <!-- Main CSS -->
+  <link rel="stylesheet" href="/css/style.css">
+
+  <!-- Sitemap links -->
+  <link rel="sitemap" type="application/xml" href="/sitemap.xml">
+
+  <%- extraHead || '' %>
+</head>
+<body>

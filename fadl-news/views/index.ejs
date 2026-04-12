@@ -1,0 +1,199 @@
+<%
+  const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+  const pageTitle = settings.site_name;
+  const pageDesc = settings.site_description;
+  const pageCanonical = baseUrl + '/';
+  const pageOgImage = featured[0]?.image_url ? baseUrl + featured[0].image_url : '';
+  const extraHead = `
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "${settings.site_name}",
+      "url": "${baseUrl}",
+      "description": "${settings.site_description}",
+      "inLanguage": "ar",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "${baseUrl}/search?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+  `;
+%>
+<%- include('partials/head', { title: pageTitle, description: pageDesc, canonical: pageCanonical, ogImage: pageOgImage, ogType: 'website', extraHead }) %>
+<%- include('partials/navbar') %>
+
+<!-- Breaking News Ticker -->
+<% if(breaking.length > 0) { %>
+<div class="breaking-bar">
+  <div class="container breaking-inner">
+    <span class="breaking-label"><i data-feather="zap"></i> عاجل</span>
+    <div class="breaking-ticker">
+      <div class="ticker-track">
+        <% breaking.forEach(b => { %>
+          <a href="/article/<%= b.slug %>" class="ticker-item"><%= b.title %></a>
+          <span class="ticker-sep">•</span>
+        <% }) %>
+        <% breaking.forEach(b => { %>
+          <a href="/article/<%= b.slug %>" class="ticker-item"><%= b.title %></a>
+          <span class="ticker-sep">•</span>
+        <% }) %>
+      </div>
+    </div>
+  </div>
+</div>
+<% } %>
+
+<main class="main-content">
+  <div class="container">
+
+    <!-- Featured / Hero Section -->
+    <% if(featured.length > 0) { %>
+    <section class="hero-section">
+      <div class="hero-main">
+        <a href="/article/<%= featured[0].slug %>" class="hero-card">
+          <div class="hero-img-wrap">
+            <% if(featured[0].image_url) { %>
+              <img src="<%= featured[0].image_url %>" alt="<%= featured[0].title %>" class="hero-img" loading="lazy">
+            <% } else { %>
+              <div class="hero-img-placeholder"></div>
+            <% } %>
+            <span class="hero-category" style="background:<%= featured[0].category_color %>"><%= featured[0].category_name %></span>
+          </div>
+          <div class="hero-body">
+            <h1 class="hero-title"><%= featured[0].title %></h1>
+            <p class="hero-excerpt"><%= featured[0].excerpt ? featured[0].excerpt.substring(0,200) : '' %></p>
+            <div class="hero-meta">
+              <span><i data-feather="user"></i> <%= featured[0].author_name %></span>
+              <span><i data-feather="clock"></i> <%= new Date(featured[0].created_at).toLocaleDateString('ar-SA') %></span>
+              <span><i data-feather="eye"></i> <%= featured[0].views %></span>
+            </div>
+          </div>
+        </a>
+      </div>
+      <% if(featured.length > 1) { %>
+      <div class="hero-side">
+        <% for(let i=1; i<Math.min(featured.length,4); i++) { %>
+        <a href="/article/<%= featured[i].slug %>" class="hero-side-card">
+          <% if(featured[i].image_url) { %>
+          <img src="<%= featured[i].image_url %>" alt="<%= featured[i].title %>" class="hero-side-img" loading="lazy">
+          <% } else { %>
+          <div class="hero-side-img-placeholder"></div>
+          <% } %>
+          <div class="hero-side-body">
+            <span class="cat-badge" style="background:<%= featured[i].category_color %>"><%= featured[i].category_name %></span>
+            <h3 class="hero-side-title"><%= featured[i].title %></h3>
+            <span class="hero-side-date"><i data-feather="clock"></i> <%= new Date(featured[i].created_at).toLocaleDateString('ar-SA') %></span>
+          </div>
+        </a>
+        <% } %>
+      </div>
+      <% } %>
+    </section>
+    <% } %>
+
+    <!-- Content + Sidebar -->
+    <div class="content-sidebar-grid">
+      <!-- Latest News -->
+      <div class="content-main">
+        <div class="section-header">
+          <h2 class="section-title"><i data-feather="clock"></i> آخر الأخبار</h2>
+          <a href="/search" class="section-more">عرض الكل <i data-feather="arrow-left"></i></a>
+        </div>
+        <div class="articles-grid">
+          <% latest.forEach(article => { %>
+          <article class="article-card">
+            <a href="/article/<%= article.slug %>" class="card-img-link">
+              <% if(article.image_url) { %>
+              <img src="<%= article.image_url %>" alt="<%= article.title %>" class="card-img" loading="lazy">
+              <% } else { %>
+              <div class="card-img-placeholder">
+                <i data-feather="image"></i>
+              </div>
+              <% } %>
+              <% if(article.breaking) { %><span class="badge badge-breaking">عاجل</span><% } %>
+              <% if(article.featured) { %><span class="badge badge-featured">مميز</span><% } %>
+            </a>
+            <div class="card-body">
+              <a href="/category/<%= article.category_slug %>" class="card-cat" style="color:<%= article.category_color %>">
+                <i data-feather="tag"></i> <%= article.category_name %>
+              </a>
+              <h3 class="card-title">
+                <a href="/article/<%= article.slug %>"><%= article.title %></a>
+              </h3>
+              <p class="card-excerpt"><%= article.excerpt ? article.excerpt.substring(0,120) + '...' : '' %></p>
+              <div class="card-meta">
+                <span><i data-feather="user"></i> <%= article.author_name %></span>
+                <span><i data-feather="clock"></i> <%= new Date(article.created_at).toLocaleDateString('ar-SA') %></span>
+                <span><i data-feather="eye"></i> <%= article.views %></span>
+              </div>
+            </div>
+          </article>
+          <% }) %>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <!-- Most Read -->
+        <div class="widget">
+          <h3 class="widget-title"><i data-feather="trending-up"></i> الأكثر قراءة</h3>
+          <ol class="popular-list">
+            <% popular.forEach((p, idx) => { %>
+            <li class="popular-item">
+              <span class="popular-num"><%= idx+1 %></span>
+              <div class="popular-info">
+                <a href="/article/<%= p.slug %>" class="popular-title"><%= p.title %></a>
+                <span class="popular-views"><i data-feather="eye"></i> <%= p.views %> مشاهدة</span>
+              </div>
+              <% if(p.image_url) { %>
+              <img src="<%= p.image_url %>" alt="<%= p.title %>" class="popular-img" loading="lazy">
+              <% } %>
+            </li>
+            <% }) %>
+          </ol>
+        </div>
+
+        <!-- Categories -->
+        <div class="widget">
+          <h3 class="widget-title"><i data-feather="grid"></i> الأقسام</h3>
+          <div class="cat-list">
+            <% categories.forEach(cat => { %>
+            <a href="/category/<%= cat.slug %>" class="cat-item" style="border-right-color:<%= cat.color %>">
+              <span class="cat-name"><%= cat.name %></span>
+              <span class="cat-count" style="background:<%= cat.color %>"><%= cat.article_count %></span>
+            </a>
+            <% }) %>
+          </div>
+        </div>
+
+        <!-- Social Follow -->
+        <div class="widget widget-social">
+          <h3 class="widget-title"><i data-feather="share-2"></i> تابعنا</h3>
+          <div class="social-follow">
+            <% if(settings.facebook_url) { %>
+            <a href="<%= settings.facebook_url %>" target="_blank" class="follow-btn follow-fb">
+              <i data-feather="facebook"></i> فيسبوك
+            </a>
+            <% } %>
+            <% if(settings.twitter_url) { %>
+            <a href="<%= settings.twitter_url %>" target="_blank" class="follow-btn follow-tw">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.742l7.74-8.855L1.5 2.25H8.07l4.253 5.624 5.921-5.624zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+              تويتر / X
+            </a>
+            <% } %>
+            <% if(settings.linkedin_url) { %>
+            <a href="<%= settings.linkedin_url %>" target="_blank" class="follow-btn follow-li">
+              <i data-feather="linkedin"></i> لينكد إن
+            </a>
+            <% } %>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</main>
+
+<%- include('partials/footer') %>

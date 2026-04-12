@@ -1,0 +1,61 @@
+<!-- Top bar -->
+<div class="topbar">
+  <div class="container topbar-inner">
+    <div class="topbar-right">
+      <span class="topbar-date" id="topbarDate"></span>
+      <% if(settings.facebook_url) { %><a href="<%= settings.facebook_url %>" target="_blank" class="topbar-social" aria-label="Facebook"><i data-feather="facebook"></i></a><% } %>
+      <% if(settings.twitter_url) { %><a href="<%= settings.twitter_url %>" target="_blank" class="topbar-social" aria-label="Twitter"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.742l7.74-8.855L1.5 2.25H8.07l4.253 5.624 5.921-5.624zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a><% } %>
+      <% if(settings.linkedin_url) { %><a href="<%= settings.linkedin_url %>" target="_blank" class="topbar-social" aria-label="LinkedIn"><i data-feather="linkedin"></i></a><% } %>
+    </div>
+    <div class="topbar-left">
+      <% if(user) { %>
+        <a href="/admin/" class="topbar-admin-link"><i data-feather="settings"></i> لوحة التحكم</a>
+        <a href="#" onclick="logout()" class="topbar-admin-link"><i data-feather="log-out"></i> خروج</a>
+      <% } else { %>
+        <a href="/admin/login.html" class="topbar-admin-link"><i data-feather="user"></i> دخول</a>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+<!-- Header -->
+<header class="site-header">
+  <div class="container header-inner">
+    <a href="/" class="site-logo">
+      <% if(settings.logo_url) { %>
+        <img src="<%= settings.logo_url %>" alt="<%= settings.site_name %>" class="logo-img">
+      <% } else { %>
+        <div class="logo-text">
+          <span class="logo-main"><%= settings.site_name %></span>
+          <span class="logo-tagline"><%= settings.site_tagline %></span>
+        </div>
+      <% } %>
+    </a>
+    <button class="mobile-menu-btn" onclick="toggleMenu()" aria-label="القائمة">
+      <i data-feather="menu"></i>
+    </button>
+  </div>
+</header>
+
+<!-- Navigation -->
+<nav class="main-nav" id="mainNav">
+  <div class="container nav-inner">
+    <ul class="nav-list">
+      <li><a href="/" class="nav-link"><i data-feather="home"></i> الرئيسية</a></li>
+      <% categories.forEach(cat => { %>
+      <li>
+        <a href="/category/<%= cat.slug %>" class="nav-link" style="border-bottom-color: <%= cat.color %>">
+          <%= cat.name %>
+          <span class="nav-count"><%= cat.article_count %></span>
+        </a>
+      </li>
+      <% }) %>
+    </ul>
+    <div class="nav-search">
+      <form action="/search" method="get" class="search-form-nav">
+        <input type="text" name="q" placeholder="ابحث في الموقع..." class="search-input-nav" required>
+        <button type="submit" class="search-btn-nav"><i data-feather="search"></i></button>
+      </form>
+    </div>
+  </div>
+</nav>

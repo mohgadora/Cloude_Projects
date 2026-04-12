@@ -1,0 +1,83 @@
+<%
+  const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+  const pageTitle = category.name + ' - ' + settings.site_name;
+  const pageDesc = category.description || 'أخبار ' + category.name;
+  const pageCanonical = baseUrl + '/category/' + category.slug;
+%>
+<%- include('partials/head', { title: pageTitle, description: pageDesc, canonical: pageCanonical, ogImage: '', ogType: 'website', extraHead: '' }) %>
+<%- include('partials/navbar') %>
+
+<main class="main-content">
+  <div class="container">
+    <!-- Category Header -->
+    <div class="category-hero" style="border-right-color:<%= category.color %>">
+      <div class="category-hero-inner">
+        <span class="cat-badge-lg" style="background:<%= category.color %>"><%= category.name %></span>
+        <h1 class="category-title"><%= category.name %></h1>
+        <% if(category.description) { %><p class="category-desc"><%= category.description %></p><% } %>
+        <span class="category-count"><%= total %> خبر</span>
+      </div>
+    </div>
+
+    <div class="content-sidebar-grid">
+      <div class="content-main">
+        <% if(articles.length === 0) { %>
+        <div class="empty-state">
+          <i data-feather="inbox"></i>
+          <p>لا توجد أخبار في هذا القسم حتى الآن</p>
+        </div>
+        <% } else { %>
+        <div class="articles-grid">
+          <% articles.forEach(article => { %>
+          <article class="article-card">
+            <a href="/article/<%= article.slug %>" class="card-img-link">
+              <% if(article.image_url) { %>
+              <img src="<%= article.image_url %>" alt="<%= article.title %>" class="card-img" loading="lazy">
+              <% } else { %>
+              <div class="card-img-placeholder"><i data-feather="image"></i></div>
+              <% } %>
+            </a>
+            <div class="card-body">
+              <h3 class="card-title"><a href="/article/<%= article.slug %>"><%= article.title %></a></h3>
+              <p class="card-excerpt"><%= article.excerpt ? article.excerpt.substring(0,120) + '...' : '' %></p>
+              <div class="card-meta">
+                <span><i data-feather="user"></i> <%= article.author_name %></span>
+                <span><i data-feather="clock"></i> <%= new Date(article.created_at).toLocaleDateString('ar-SA') %></span>
+                <span><i data-feather="eye"></i> <%= article.views %></span>
+              </div>
+            </div>
+          </article>
+          <% }) %>
+        </div>
+
+        <!-- Pagination -->
+        <% if(pages > 1) { %>
+        <div class="pagination">
+          <% if(page > 1) { %><a href="/category/<%= category.slug %>?page=<%= page-1 %>" class="page-btn"><i data-feather="chevron-right"></i> السابق</a><% } %>
+          <% for(let p=1; p<=pages; p++) { %>
+          <a href="/category/<%= category.slug %>?page=<%= p %>" class="page-btn <%= p===page ? 'active' : '' %>"><%= p %></a>
+          <% } %>
+          <% if(page < pages) { %><a href="/category/<%= category.slug %>?page=<%= page+1 %>" class="page-btn">التالي <i data-feather="chevron-left"></i></a><% } %>
+        </div>
+        <% } %>
+        <% } %>
+      </div>
+
+      <aside class="sidebar">
+        <div class="widget">
+          <h3 class="widget-title"><i data-feather="grid"></i> الأقسام</h3>
+          <div class="cat-list">
+            <% categories.forEach(cat => { %>
+            <a href="/category/<%= cat.slug %>" class="cat-item <%= cat.slug === category.slug ? 'active' : '' %>" style="border-right-color:<%= cat.color %>">
+              <span class="cat-name"><%= cat.name %></span>
+              <span class="cat-count" style="background:<%= cat.color %>"><%= cat.article_count %></span>
+            </a>
+            <% }) %>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</main>
+
+<%- include('partials/footer') %>

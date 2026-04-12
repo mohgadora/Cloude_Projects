@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>إدارة الأخبار - مدونة فضل محمد خير</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/feather-icons@4.29.2/dist/feather.min.js"></script>
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+<div class="admin-layout">
+  <!-- Sidebar -->
+  <aside class="admin-sidebar" id="adminSidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-site-name">مدونة فضل محمد خير</div>
+      <div class="sidebar-tagline">لوحة التحكم</div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">الرئيسية</div>
+      <a href="/admin/" class="sidebar-link"><i data-feather="grid"></i> لوحة التحكم</a>
+      <a href="/" target="_blank" class="sidebar-link"><i data-feather="globe"></i> عرض الموقع</a>
+      <div class="nav-section-title">إدارة المحتوى</div>
+      <a href="/admin/articles.html" class="sidebar-link active"><i data-feather="file-text"></i> إدارة الأخبار</a>
+      <a href="/admin/new-article.html" class="sidebar-link"><i data-feather="plus-circle"></i> خبر جديد</a>
+      <div class="nav-section-title">إدارة الموقع</div>
+      <a href="/admin/users.html" class="sidebar-link"><i data-feather="users"></i> المستخدمون</a>
+      <a href="/admin/newsletter.html" class="sidebar-link"><i data-feather="mail"></i> النشرة البريدية</a>
+      <a href="/admin/settings.html" class="sidebar-link"><i data-feather="settings"></i> الإعدادات</a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="user-avatar" id="userAvatar">A</div>
+      <div>
+        <div class="user-name" id="userName">...</div>
+        <div class="user-role" id="userRole">...</div>
+      </div>
+      <button class="user-logout" onclick="logout()"><i data-feather="log-out"></i></button>
+    </div>
+  </aside>
+
+  <div class="admin-main">
+    <header class="admin-header">
+      <div style="display:flex;align-items:center;gap:0.75rem;">
+        <button class="sidebar-toggle" onclick="toggleSidebar()"><i data-feather="menu"></i></button>
+        <h1 class="header-title">إدارة الأخبار</h1>
+      </div>
+      <div class="header-actions">
+        <a href="/admin/new-article.html" class="btn btn-primary btn-sm"><i data-feather="plus"></i> خبر جديد</a>
+      </div>
+    </header>
+
+    <div class="admin-content">
+      <!-- Filters -->
+      <div class="filters-bar">
+        <input type="text" class="filter-input" id="searchInput" placeholder="🔍 بحث في الأخبار...">
+        <select class="filter-select" id="statusFilter">
+          <option value="">جميع الحالات</option>
+          <option value="published">منشور</option>
+          <option value="draft">مسودة</option>
+        </select>
+        <select class="filter-select" id="categoryFilter">
+          <option value="">جميع الأقسام</option>
+        </select>
+        <select class="filter-select" id="featuredFilter">
+          <option value="">الكل</option>
+          <option value="1">مميز فقط</option>
+          <option value="breaking">عاجل فقط</option>
+        </select>
+        <button class="btn btn-outline btn-sm" onclick="loadArticles()"><i data-feather="refresh-cw"></i> تحديث</button>
+      </div>
+
+      <!-- Table -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title-sm"><i data-feather="file-text"></i> قائمة الأخبار</span>
+          <span id="articleCount" style="font-size:0.82rem;color:#90A4AE;"></span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th width="50">صورة</th>
+                <th>العنوان</th>
+                <th>القسم</th>
+                <th>الحالة</th>
+                <th>الكاتب</th>
+                <th>المشاهدات</th>
+                <th>التاريخ</th>
+                <th width="140">إجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="articlesBody">
+              <tr><td colspan="8" style="text-align:center;padding:3rem;">
+                <div class="spinner spinner-dark" style="margin:0 auto;width:28px;height:28px;"></div>
+              </td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="admin-pagination" id="pagination"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirm Modal -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header">
+      <span class="modal-title">تأكيد الحذف</span>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:0.95rem;">هل أنت متأكد من حذف الخبر "<strong id="deleteTitle"></strong>"؟</p>
+      <p style="font-size:0.85rem;color:#C62828;margin-top:0.5rem;">⚠ هذا الإجراء لا يمكن التراجع عنه</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-danger" onclick="confirmDelete()" id="confirmDeleteBtn"><i data-feather="trash-2"></i> حذف</button>
+      <button class="btn btn-gray" onclick="closeModal()">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+feather.replace();
+
+let currentPage = 1;
+let deleteId = null;
+const limit = 15;
+
+async function init() {
+  await checkAuth();
+  await loadCategories();
+  await loadArticles();
+  setupFilters();
+}
+
+async function checkAuth() {
+  const resp = await fetch('/api/auth/me');
+  if (!resp.ok) { window.location.href = '/admin/login.html'; return; }
+  const { user } = await resp.json();
+  document.getElementById('userAvatar').textContent = user.username[0].toUpperCase();
+  document.getElementById('userName').textContent = user.username;
+  document.getElementById('userRole').textContent = user.role === 'admin' ? 'مدير' : 'محرر';
+  window._currentUser = user;
+}
+
+async function loadCategories() {
+  const resp = await fetch('/api/articles/meta/categories');
+  const { categories } = await resp.json();
+  const sel = document.getElementById('categoryFilter');
+  categories.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c.slug;
+    opt.textContent = c.name;
+    sel.appendChild(opt);
+  });
+}
+
+function setupFilters() {
+  let timeout;
+  document.getElementById('searchInput').addEventListener('input', () => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => { currentPage = 1; loadArticles(); }, 400);
+  });
+  document.getElementById('statusFilter').addEventListener('change', () => { currentPage = 1; loadArticles(); });
+  document.getElementById('categoryFilter').addEventListener('change', () => { currentPage = 1; loadArticles(); });
+  document.getElementById('featuredFilter').addEventListener('change', () => { currentPage = 1; loadArticles(); });
+}
+
+async function loadArticles() {
+  const search = document.getElementById('searchInput').value;
+  const status = document.getElementById('statusFilter').value;
+  const category = document.getElementById('categoryFilter').value;
+  const featured = document.getElementById('featuredFilter').value;
+
+  let url = `/api/articles?page=${currentPage}&limit=${limit}`;
+  if (search) url += `&search=${encodeURIComponent(search)}`;
+  if (status) url += `&status=${status}`;
+  if (category) url += `&category=${category}`;
+  if (featured === '1') url += '&featured=1';
+  if (featured === 'breaking') url += '&breaking=1';
+
+  document.getElementById('articlesBody').innerHTML = `<tr><td colspan="8" style="text-align:center;padding:3rem;">
+    <div class="spinner spinner-dark" style="margin:0 auto;width:28px;height:28px;"></div>
+  </td></tr>`;
+
+  const resp = await fetch(url);
+  const data = await resp.json();
+
+  document.getElementById('articleCount').textContent = `${data.total} خبر`;
+
+  if (!data.articles.length) {
+    document.getElementById('articlesBody').innerHTML = `<tr><td colspan="8">
+      <div class="empty-state"><i data-feather="inbox"></i><h3>لا توجد أخبار</h3></div>
+    </td></tr>`;
+    document.getElementById('pagination').innerHTML = '';
+    feather.replace();
+    return;
+  }
+
+  document.getElementById('articlesBody').innerHTML = data.articles.map(a => `
+    <tr>
+      <td>${a.image_url ? `<img src="${a.image_url}" class="td-thumb" alt="">` : '<div class="td-thumb-placeholder"></div>'}</td>
+      <td>
+        <div class="td-title" title="${a.title}">${a.title}</div>
+        <div style="display:flex;gap:0.35rem;margin-top:0.3rem;flex-wrap:wrap;">
+          ${a.featured ? '<span class="status-badge status-feat">مميز</span>' : ''}
+          ${a.breaking ? '<span class="status-badge" style="background:#FFEBEE;color:#C62828;">عاجل</span>' : ''}
+        </div>
+      </td>
+      <td><span style="font-size:0.82rem;color:#607D8B;">${a.category_name || '-'}</span></td>
+      <td><span class="status-badge status-${a.status}">${a.status === 'published' ? 'منشور' : 'مسودة'}</span></td>
+      <td style="font-size:0.82rem;">${a.author_name}</td>
+      <td style="font-size:0.82rem;">${(a.views||0).toLocaleString('ar')}</td>
+      <td style="font-size:0.78rem;white-space:nowrap;">${new Date(a.created_at).toLocaleDateString('ar-SA')}</td>
+      <td>
+        <div class="action-btns">
+          <a href="/admin/edit-article.html?id=${a.id}" class="btn-icon btn-edit" title="تعديل"><i data-feather="edit-2"></i></a>
+          <a href="/article/${a.slug}" target="_blank" class="btn-icon btn-view" title="عرض"><i data-feather="external-link"></i></a>
+          <button class="btn-icon btn-social" title="نشر على السوشيال" onclick="socialPost(${a.id}, '${a.title.replace(/'/g, "\\'")}')"><i data-feather="share-2"></i></button>
+          <button class="btn-icon btn-delete" title="حذف" onclick="deleteArticle(${a.id}, '${a.title.replace(/'/g, "\\'")}')"><i data-feather="trash-2"></i></button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+
+  // Pagination
+  renderPagination(data.page, data.pages);
+  feather.replace();
+}
+
+function renderPagination(page, pages) {
+  if (pages <= 1) { document.getElementById('pagination').innerHTML = ''; return; }
+  let html = '';
+  if (page > 1) html += `<button class="page-btn" onclick="goPage(${page-1})"><i data-feather="chevron-right"></i> السابق</button>`;
+  for (let p = Math.max(1, page-2); p <= Math.min(pages, page+2); p++) {
+    html += `<button class="page-btn ${p===page?'active':''}" onclick="goPage(${p})">${p}</button>`;
+  }
+  if (page < pages) html += `<button class="page-btn" onclick="goPage(${page+1})">التالي <i data-feather="chevron-left"></i></button>`;
+  document.getElementById('pagination').innerHTML = html;
+  feather.replace();
+}
+
+function goPage(p) { currentPage = p; loadArticles(); }
+
+function deleteArticle(id, title) {
+  deleteId = id;
+  document.getElementById('deleteTitle').textContent = title;
+  document.getElementById('deleteModal').classList.add('open');
+}
+
+async function confirmDelete() {
+  const btn = document.getElementById('confirmDeleteBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>';
+  const resp = await fetch(`/api/articles/${deleteId}`, { method: 'DELETE' });
+  if (resp.ok) {
+    showToast('تم حذف الخبر بنجاح', 'success');
+    closeModal();
+    loadArticles();
+  } else {
+    const d = await resp.json();
+    showToast(d.error || 'خطأ في الحذف', 'error');
+  }
+  btn.disabled = false;
+  btn.innerHTML = '<i data-feather="trash-2"></i> حذف';
+  feather.replace();
+}
+
+async function socialPost(id, title) {
+  if (!confirm(`نشر "${title}" على منصات التواصل الاجتماعي؟`)) return;
+  const resp = await fetch(`/api/social/post/${id}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ platforms: ['facebook', 'linkedin', 'twitter'] })
+  });
+  const data = await resp.json();
+  let msg = 'نتائج النشر:\n';
+  for (const [p, r] of Object.entries(data.results || {})) {
+    msg += `${p}: ${r.success ? '✓ نجح' : '✗ فشل - ' + (r.error || '')}\n`;
+  }
+  alert(msg);
+}
+
+function closeModal() { document.getElementById('deleteModal').classList.remove('open'); }
+function toggleSidebar() { document.getElementById('adminSidebar').classList.toggle('open'); }
+async function logout() { await fetch('/api/auth/logout', { method: 'POST' }); window.location.href = '/admin/login.html'; }
+
+function showToast(msg, type = 'info') {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = `toast toast-${type}`;
+  t.innerHTML = `<span>${msg}</span><button class="toast-close" onclick="this.parentElement.remove()">×</button>`;
+  c.appendChild(t);
+  setTimeout(() => t.remove(), 4000);
+}
+
+init();
+</script>
+</body>
+</html>

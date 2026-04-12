@@ -1,0 +1,21 @@
+<%
+  const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+%>
+<%- include('partials/head', { title: 'الصفحة غير موجودة - 404', description: 'الصفحة التي تبحث عنها غير موجودة', canonical: baseUrl, ogImage: '', ogType: 'website', extraHead: '' }) %>
+<%- include('partials/navbar') %>
+
+<main class="main-content">
+  <div class="container">
+    <div class="not-found">
+      <div class="not-found-number">404</div>
+      <h1 class="not-found-title">الصفحة غير موجودة</h1>
+      <p class="not-found-desc">عذراً، الصفحة التي تبحث عنها غير موجودة أو تم نقلها.</p>
+      <div class="not-found-actions">
+        <a href="/" class="btn-primary"><i data-feather="home"></i> العودة للرئيسية</a>
+        <a href="/search" class="btn-secondary"><i data-feather="search"></i> بحث</a>
+      </div>
+    </div>
+  </div>
+</main>
+
+<%- include('partials/footer') %>

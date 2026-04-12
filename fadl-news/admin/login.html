@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تسجيل الدخول - مدونة فضل محمد خير</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Cairo', sans-serif;
+      background: linear-gradient(135deg, #0D1B2A 0%, #1565C0 60%, #0D47A1 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      direction: rtl;
+    }
+    .login-wrap {
+      width: 100%;
+      max-width: 420px;
+    }
+    .login-logo {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .login-logo-text {
+      font-size: 2rem;
+      font-weight: 900;
+      color: #fff;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    }
+    .login-logo-sub {
+      font-size: 0.85rem;
+      color: #D4A017;
+      font-weight: 600;
+      margin-top: 0.25rem;
+    }
+    .login-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 2.5rem;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    }
+    .login-title {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #1565C0;
+      margin-bottom: 0.4rem;
+      text-align: center;
+    }
+    .login-subtitle {
+      font-size: 0.85rem;
+      color: #607D8B;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .form-group { margin-bottom: 1.25rem; }
+    label {
+      display: block;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #37474F;
+      margin-bottom: 0.4rem;
+    }
+    .input-wrap { position: relative; }
+    .input-icon {
+      position: absolute;
+      right: 0.9rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #90A4AE;
+    }
+    input[type="text"], input[type="password"] {
+      width: 100%;
+      padding: 0.75rem 2.75rem 0.75rem 0.9rem;
+      border: 2px solid #E0E0E0;
+      border-radius: 8px;
+      font-family: 'Cairo', sans-serif;
+      font-size: 0.95rem;
+      direction: rtl;
+      transition: border-color 0.2s;
+      background: #F8F9FA;
+    }
+    input:focus { outline: none; border-color: #1565C0; background: #fff; }
+    .submit-btn {
+      width: 100%;
+      padding: 0.85rem;
+      background: linear-gradient(135deg, #1565C0, #0D47A1);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Cairo', sans-serif;
+      font-size: 1rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.2s;
+      margin-top: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    .submit-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+    .submit-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+    .alert {
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      margin-bottom: 1.25rem;
+      display: none;
+    }
+    .alert-error { background: #FFEBEE; color: #C62828; border: 1px solid #FFCDD2; }
+    .alert-success { background: #E8F5E9; color: #2E7D32; border: 1px solid #C8E6C9; }
+    .back-link {
+      text-align: center;
+      margin-top: 1.5rem;
+    }
+    .back-link a {
+      color: rgba(255,255,255,0.8);
+      font-size: 0.85rem;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .back-link a:hover { color: #D4A017; }
+    .spinner {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="login-wrap">
+    <div class="login-logo">
+      <div class="login-logo-text">مدونة فضل محمد خير</div>
+      <div class="login-logo-sub">لوحة التحكم</div>
+    </div>
+    <div class="login-card">
+      <h1 class="login-title">مرحباً بك</h1>
+      <p class="login-subtitle">أدخل بياناتك للدخول إلى لوحة التحكم</p>
+
+      <div class="alert alert-error" id="alertBox"></div>
+
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="username">اسم المستخدم أو البريد الإلكتروني</label>
+          <div class="input-wrap">
+            <span class="input-icon">👤</span>
+            <input type="text" id="username" name="username" required placeholder="admin" autocomplete="username">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="password">كلمة المرور</label>
+          <div class="input-wrap">
+            <span class="input-icon">🔒</span>
+            <input type="password" id="password" name="password" required placeholder="••••••••" autocomplete="current-password">
+          </div>
+        </div>
+        <button type="submit" class="submit-btn" id="submitBtn">
+          <span id="btnText">دخول</span>
+        </button>
+      </form>
+    </div>
+    <div class="back-link"><a href="/">← العودة للموقع</a></div>
+  </div>
+
+  <script>
+    // Redirect if already logged in
+    const token = document.cookie.split('; ').find(r => r.startsWith('token='));
+    if (token) window.location.href = '/admin/';
+
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const btn = document.getElementById('submitBtn');
+      const btnText = document.getElementById('btnText');
+      const alert = document.getElementById('alertBox');
+
+      btn.disabled = true;
+      btnText.innerHTML = '<span class="spinner"></span> جارٍ الدخول...';
+      alert.style.display = 'none';
+
+      try {
+        const resp = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: document.getElementById('username').value,
+            password: document.getElementById('password').value
+          })
+        });
+        const data = await resp.json();
+        if (resp.ok) {
+          window.location.href = '/admin/';
+        } else {
+          alert.textContent = data.error || 'خطأ في تسجيل الدخول';
+          alert.className = 'alert alert-error';
+          alert.style.display = 'block';
+        }
+      } catch {
+        alert.textContent = 'خطأ في الاتصال بالخادم';
+        alert.className = 'alert alert-error';
+        alert.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        btnText.textContent = 'دخول';
+      }
+    });
+  </script>
+</body>
+</html>
