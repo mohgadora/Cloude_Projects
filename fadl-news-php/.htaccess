@@ -1,0 +1,10 @@
+# Redirect all requests to the /public folder (for shared hosting without docroot config)
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+
+# Deny direct access to sensitive folders
+<FilesMatch "(^\.env|^composer\.(json|lock)|^env$)">
+    Require all denied
+</FilesMatch>

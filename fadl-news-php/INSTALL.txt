@@ -1,0 +1,143 @@
+=============================================================
+  مدونة فضل محمد خير - تعليمات التثبيت على Namecheap (CI4)
+=============================================================
+
+هذا المشروع مبني على CodeIgniter 4. ملفات الإطار (framework)
+ليست موجودة ضمن هذا المستودع لتقليل الحجم. اتبع الخطوات أدناه.
+
+=============================================================
+1) تثبيت إطار CodeIgniter 4
+=============================================================
+
+الخيار أ - باستخدام Composer (موصى به):
+  cd fadl-news-php
+  composer install
+
+الخيار ب - بدون Composer (تحميل ZIP):
+  1. حمّل الإصدار الأحدث من: https://codeigniter.com/download
+     اختر "CodeIgniter 4 Framework"
+  2. فك الضغط. ستجد مجلد باسم CodeIgniter-4.x.x
+  3. انسخ المجلدات والملفات التالية من المجلد المفكوك إلى
+     مشروعنا (fadl-news-php/) بدون استبدال ملفات موجودة:
+       - system/          (كامل)
+       - vendor/          (إن وُجد)
+       - public/index.php (موجود لدينا - لا تستبدله)
+       - spark            (ملف CLI، اختياري)
+       - app/Config/*     (من الإطار - لا تستبدل الملفات الموجودة عندنا)
+  4. أضف هذه الملفات من الإطار إذا لم تكن موجودة:
+       app/Config/App.php
+       app/Config/Autoload.php
+       app/Config/Cache.php
+       app/Config/Constants.php
+       app/Config/ContentSecurityPolicy.php
+       app/Config/Cookie.php
+       app/Config/Database.php
+       app/Config/DocTypes.php
+       app/Config/Email.php
+       app/Config/Encryption.php
+       app/Config/Events.php
+       app/Config/Exceptions.php
+       app/Config/Format.php
+       app/Config/Generators.php
+       app/Config/Honeypot.php
+       app/Config/Images.php
+       app/Config/Kint.php
+       app/Config/Logger.php
+       app/Config/Migrations.php
+       app/Config/Mimes.php
+       app/Config/Modules.php
+       app/Config/Pager.php
+       app/Config/Paths.php
+       app/Config/Publisher.php
+       app/Config/Routing.php
+       app/Config/Security.php
+       app/Config/Services.php
+       app/Config/Session.php
+       app/Config/Toolbar.php
+       app/Config/UserAgents.php
+       app/Config/Validation.php
+       app/Config/View.php
+
+=============================================================
+2) إعداد ملف البيئة (.env)
+=============================================================
+
+  cp env .env
+  nano .env
+
+ثم عدّل القيم التالية خصوصاً:
+
+  CI_ENVIRONMENT = production
+  app.baseURL = 'https://yourdomain.com/'
+
+  database.default.hostname = localhost
+  database.default.database = cpaneluser_fadlnews
+  database.default.username = cpaneluser_dbuser
+  database.default.password = كلمة_المرور_الخاصة_بـ_MySQL
+
+  encryption.key = hex2bin:أدخل_سلسلة_عشوائية_64_حرف_hex
+  admin.password = كلمة_مرور_قوية_للمدير
+
+لتوليد مفتاح تشفير عشوائي:
+  php -r "echo bin2hex(random_bytes(32));"
+
+=============================================================
+3) إنشاء قاعدة البيانات في cPanel
+=============================================================
+
+  1. افتح cPanel > MySQL Databases
+  2. أنشئ قاعدة جديدة: fadlnews
+  3. أنشئ مستخدم MySQL جديد
+  4. اربط المستخدم بالقاعدة مع صلاحيات ALL PRIVILEGES
+  5. ضع البيانات في ملف .env
+
+=============================================================
+4) تشغيل الـ Migrations وبيانات البذر (Seed)
+=============================================================
+
+على جهازك المحلي أو عبر SSH في Namecheap:
+
+  php spark migrate
+  php spark db:seed DefaultSeeder
+
+هذا سيُنشئ الجداول ويُدخل الفئات الافتراضية وحساب المدير.
+
+=============================================================
+5) الرفع على Namecheap (cPanel)
+=============================================================
+
+الطريقة الموصى بها (أفضل أماناً):
+  - ارفع المجلد كاملاً إلى /home/cpaneluser/
+    بحيث يكون fadl-news-php/ خارج public_html
+  - اجعل Document Root للنطاق يشير إلى:
+    /home/cpaneluser/fadl-news-php/public
+  - (cPanel > Domains > Manage > Document Root)
+
+الطريقة البديلة (أبسط):
+  - ارفع محتوى fadl-news-php كاملاً إلى public_html
+  - ملف .htaccess الخارجي سيقوم بإعادة التوجيه إلى public/
+
+=============================================================
+6) صلاحيات المجلدات
+=============================================================
+
+اجعل الصلاحيات:
+  chmod -R 755 public/uploads
+  chmod -R 755 writable
+
+=============================================================
+7) تسجيل الدخول الأول
+=============================================================
+
+  افتح: https://yourdomain.com/admin/login.html
+  اسم المستخدم: admin (أو ما ضبطته في .env)
+  كلمة المرور:   ما ضبطته في .env
+
+=============================================================
+ملاحظات
+=============================================================
+
+- النشر التلقائي على Facebook/Twitter/LinkedIn معطّل في هذا
+  الإصدار (كما اُتّفق). لتفعيله، حدّث app/Controllers/Api/Social.php
+- لمشاكل الصلاحيات، تأكّد أن writable/ قابلة للكتابة من PHP.
+- للتحقق من بيئة الخادم: php -v   (يجب أن يكون PHP >= 8.1)

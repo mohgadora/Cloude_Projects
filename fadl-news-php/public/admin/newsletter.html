@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>النشرة البريدية - مدونة فضل محمد خير</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/feather-icons@4.29.2/dist/feather.min.js"></script>
+  <link rel="stylesheet" href="/css/admin.css">
+  <style>
+    /* Newsletter designer specific */
+    .newsletter-layout { display: grid; grid-template-columns: 380px 1fr; gap: 1.5rem; align-items: start; }
+    .articles-picker { max-height: 80vh; overflow-y: auto; }
+    .article-pick-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.65rem 0.75rem;
+      border-radius: 8px;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: var(--bg);
+      margin-bottom: 0.4rem;
+    }
+    .article-pick-item:hover { background: #E3F2FD; border-color: #90CAF9; }
+    .article-pick-item.selected { background: #E3F2FD; border-color: var(--primary); }
+    .article-pick-item input[type="checkbox"] { display: none; }
+    .pick-check {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      border: 2px solid #CFD8DC;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.2s;
+      font-size: 0.75rem;
+      color: #fff;
+    }
+    .article-pick-item.selected .pick-check { background: var(--primary); border-color: var(--primary); }
+    .pick-thumb { width: 50px; height: 40px; object-fit: cover; border-radius: 6px; flex-shrink: 0; }
+    .pick-thumb-placeholder { width: 50px; height: 40px; background: linear-gradient(135deg, var(--primary), #42A5F5); border-radius: 6px; flex-shrink: 0; }
+    .pick-info { flex: 1; min-width: 0; }
+    .pick-title { font-size: 0.82rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pick-meta { font-size: 0.72rem; color: #90A4AE; }
+    .pick-order { font-size: 0.72rem; font-weight: 800; color: var(--primary); min-width: 18px; text-align: center; }
+
+    /* PDF Preview */
+    .preview-outer {
+      background: #78909C;
+      padding: 1.5rem;
+      border-radius: var(--radius);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      min-height: 500px;
+    }
+    .preview-toolbar {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      background: #546E7A;
+      padding: 0.65rem 1rem;
+      border-radius: var(--radius);
+      width: 100%;
+      max-width: 700px;
+    }
+    .preview-toolbar h3 { color: #fff; font-size: 0.9rem; font-weight: 700; flex: 1; }
+    #nlPreview {
+      width: 100%;
+      max-width: 700px;
+      background: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.35);
+      font-family: 'Cairo', sans-serif;
+      direction: rtl;
+    }
+
+    /* Newsletter Template Styles */
+    .nl-header {
+      background: linear-gradient(135deg, #0D1B2A 0%, #1565C0 100%);
+      padding: 2.5rem 2rem;
+      text-align: center;
+      color: #fff;
+    }
+    .nl-header-logo { font-size: 2.2rem; font-weight: 900; margin-bottom: 0.25rem; }
+    .nl-header-tagline { font-size: 0.9rem; color: #D4A017; font-weight: 600; }
+    .nl-header-date {
+      display: inline-block;
+      background: rgba(255,255,255,0.12);
+      padding: 0.3rem 1rem;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      margin-top: 0.75rem;
+    }
+    .nl-hero {
+      padding: 0;
+      background: #fff;
+    }
+    .nl-hero-img { width: 100%; height: 260px; object-fit: cover; display: block; }
+    .nl-hero-img-placeholder { width: 100%; height: 260px; background: linear-gradient(135deg, #1565C0, #42A5F5); display: block; }
+    .nl-hero-body { padding: 1.5rem 2rem; border-bottom: 3px solid #1565C0; }
+    .nl-hero-cat {
+      display: inline-block;
+      background: #1565C0;
+      color: #fff;
+      padding: 0.2rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    .nl-hero-title { font-size: 1.5rem; font-weight: 900; color: #212121; line-height: 1.4; margin-bottom: 0.5rem; }
+    .nl-hero-excerpt { font-size: 0.9rem; color: #607D8B; line-height: 1.7; }
+    .nl-hero-meta { font-size: 0.78rem; color: #90A4AE; margin-top: 0.75rem; }
+    .nl-section-title {
+      background: #F5F7FA;
+      padding: 0.75rem 2rem;
+      font-size: 0.82rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #1565C0;
+      border-bottom: 1px solid #E0E0E0;
+    }
+    .nl-articles-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0;
+    }
+    .nl-article-item {
+      padding: 1.25rem;
+      border-bottom: 1px solid #F0F0F0;
+      border-left: 1px solid #F0F0F0;
+    }
+    .nl-article-item:nth-child(odd) { border-left: none; }
+    .nl-article-img { width: 100%; height: 130px; object-fit: cover; border-radius: 6px; margin-bottom: 0.6rem; display: block; }
+    .nl-article-img-placeholder { width: 100%; height: 130px; background: linear-gradient(135deg, #CFD8DC, #ECEFF1); border-radius: 6px; margin-bottom: 0.6rem; display: block; }
+    .nl-article-cat { font-size: 0.7rem; font-weight: 700; color: #1565C0; margin-bottom: 0.3rem; }
+    .nl-article-title { font-size: 0.88rem; font-weight: 800; line-height: 1.4; color: #212121; margin-bottom: 0.35rem; }
+    .nl-article-excerpt { font-size: 0.78rem; color: #607D8B; line-height: 1.6; }
+    .nl-article-meta { font-size: 0.72rem; color: #90A4AE; margin-top: 0.4rem; }
+    .nl-footer {
+      background: #0D1B2A;
+      color: #90A4AE;
+      padding: 1.5rem 2rem;
+      text-align: center;
+    }
+    .nl-footer-name { font-size: 1rem; font-weight: 800; color: #fff; margin-bottom: 0.3rem; }
+    .nl-footer-links { display: flex; justify-content: center; gap: 1.5rem; margin-top: 0.5rem; font-size: 0.78rem; }
+    .nl-footer-links a { color: #D4A017; text-decoration: none; }
+    .nl-footer-copy { font-size: 0.72rem; color: #455A64; margin-top: 0.75rem; }
+    .nl-divider { height: 4px; background: linear-gradient(90deg, #1565C0, #D4A017, #1565C0); }
+  </style>
+</head>
+<body>
+<div class="admin-layout">
+  <aside class="admin-sidebar" id="adminSidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-site-name">مدونة فضل محمد خير</div>
+      <div class="sidebar-tagline">لوحة التحكم</div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">الرئيسية</div>
+      <a href="/admin/" class="sidebar-link"><i data-feather="grid"></i> لوحة التحكم</a>
+      <a href="/" target="_blank" class="sidebar-link"><i data-feather="globe"></i> عرض الموقع</a>
+      <div class="nav-section-title">إدارة المحتوى</div>
+      <a href="/admin/articles.html" class="sidebar-link"><i data-feather="file-text"></i> إدارة الأخبار</a>
+      <a href="/admin/new-article.html" class="sidebar-link"><i data-feather="plus-circle"></i> خبر جديد</a>
+      <div class="nav-section-title">إدارة الموقع</div>
+      <a href="/admin/users.html" class="sidebar-link"><i data-feather="users"></i> المستخدمون</a>
+      <a href="/admin/newsletter.html" class="sidebar-link active"><i data-feather="mail"></i> النشرة البريدية</a>
+      <a href="/admin/settings.html" class="sidebar-link"><i data-feather="settings"></i> الإعدادات</a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="user-avatar" id="userAvatar">A</div>
+      <div><div class="user-name" id="userName">...</div><div class="user-role" id="userRole">...</div></div>
+      <button class="user-logout" onclick="logout()"><i data-feather="log-out"></i></button>
+    </div>
+  </aside>
+
+  <div class="admin-main">
+    <header class="admin-header">
+      <div style="display:flex;align-items:center;gap:0.75rem;">
+        <button class="sidebar-toggle" onclick="toggleSidebar()"><i data-feather="menu"></i></button>
+        <h1 class="header-title">مصمم النشرة البريدية</h1>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-gray btn-sm" onclick="saveNewsletter()"><i data-feather="save"></i> حفظ</button>
+        <button class="btn btn-success btn-sm" onclick="downloadPDF()"><i data-feather="download"></i> تحميل PDF</button>
+      </div>
+    </header>
+
+    <div class="admin-content">
+      <div class="newsletter-layout">
+
+        <!-- Left Panel: Article Picker -->
+        <div style="display:flex;flex-direction:column;gap:1.25rem;">
+
+          <!-- Newsletter Settings -->
+          <div class="card">
+            <div class="card-header"><span class="card-title-sm"><i data-feather="settings"></i> إعدادات النشرة</span></div>
+            <div class="card-body" style="display:flex;flex-direction:column;gap:0.75rem;">
+              <div class="form-group">
+                <label class="form-label">عنوان النشرة</label>
+                <input type="text" id="nlTitle" class="form-control" placeholder="نشرة الأسبوع - أبريل 2024" oninput="updatePreview()">
+              </div>
+              <div class="form-group">
+                <label class="form-label">التاريخ</label>
+                <input type="text" id="nlDate" class="form-control" oninput="updatePreview()">
+              </div>
+              <div class="form-group">
+                <label class="form-label">لون رئيسي</label>
+                <input type="color" id="nlColor" class="form-control" value="#1565C0" style="height:44px;padding:0.3rem;" oninput="updatePreview()">
+              </div>
+              <div class="form-group">
+                <label class="form-label">عدد الأخبار المميزة في الأعلى</label>
+                <select id="nlHeroCount" class="form-control" onchange="updatePreview()">
+                  <option value="1">خبر واحد (Hero)</option>
+                  <option value="2">خبران</option>
+                  <option value="0">بدون خبر مميز</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Article Picker -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title-sm"><i data-feather="list"></i> اختر المقالات</span>
+              <span id="selectedCount" style="font-size:0.78rem;color:#90A4AE;">0 مختار</span>
+            </div>
+            <div class="card-body articles-picker" id="articlesPicker">
+              <div style="text-align:center;padding:2rem;"><div class="spinner spinner-dark" style="margin:0 auto;"></div></div>
+            </div>
+          </div>
+
+          <!-- Saved Newsletters -->
+          <div class="card">
+            <div class="card-header"><span class="card-title-sm"><i data-feather="archive"></i> النشرات المحفوظة</span></div>
+            <div class="card-body" id="savedNewsletters" style="max-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:0.4rem;">
+              <div style="font-size:0.82rem;color:#90A4AE;text-align:center;">جارٍ التحميل...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Panel: Preview -->
+        <div>
+          <div class="preview-outer">
+            <div class="preview-toolbar">
+              <h3>🖥 معاينة النشرة</h3>
+              <button class="btn btn-sm" style="background:#fff;color:#1565C0;" onclick="updatePreview()"><i data-feather="refresh-cw"></i></button>
+              <button class="btn btn-success btn-sm" onclick="downloadPDF()"><i data-feather="download"></i> تحميل PDF</button>
+              <button class="btn btn-sm" style="background:#546E7A;color:#fff;" onclick="printPreview()"><i data-feather="printer"></i></button>
+            </div>
+            <div id="nlPreview">
+              <!-- Generated by updatePreview() -->
+              <div style="padding:3rem;text-align:center;color:#90A4AE;font-family:'Cairo',sans-serif;">
+                <i data-feather="mail" style="width:48px;height:48px;margin:0 auto 1rem;display:block;opacity:0.4;"></i>
+                <p>اختر المقالات من القائمة اليسرى لبدء تصميم النشرة</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- jsPDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+feather.replace();
+let allArticles = [];
+let selectedIds = [];
+let siteName = 'مدونة فضل محمد خير';
+let siteTagline = 'الخبر الصادق والرأي الحر';
+let siteUrl = '';
+
+async function init() {
+  const resp = await fetch('/api/auth/me');
+  if (!resp.ok) { window.location.href = '/admin/login.html'; return; }
+  const { user } = await resp.json();
+  document.getElementById('userAvatar').textContent = user.username[0].toUpperCase();
+  document.getElementById('userName').textContent = user.username;
+  document.getElementById('userRole').textContent = user.role === 'admin' ? 'مدير' : 'محرر';
+
+  // Set date
+  document.getElementById('nlDate').value = new Date().toLocaleDateString('ar-SA', {year:'numeric',month:'long',day:'numeric'});
+
+  await loadArticles();
+  await loadSavedNewsletters();
+  updatePreview();
+}
+
+async function loadArticles() {
+  const resp = await fetch('/api/articles?status=published&limit=100');
+  const data = await resp.json();
+  allArticles = data.articles;
+  renderPicker();
+}
+
+function renderPicker() {
+  const container = document.getElementById('articlesPicker');
+  if (!allArticles.length) { container.innerHTML = '<p style="text-align:center;color:#90A4AE;font-size:0.85rem;">لا توجد أخبار منشورة</p>'; return; }
+  container.innerHTML = allArticles.map(a => `
+    <div class="article-pick-item ${selectedIds.includes(a.id) ? 'selected' : ''}"
+         onclick="toggleArticle(${a.id})" id="pick_${a.id}">
+      <div class="pick-check">${selectedIds.includes(a.id) ? '✓' : ''}</div>
+      ${a.image_url ? `<img src="${a.image_url}" class="pick-thumb" alt="">` : '<div class="pick-thumb-placeholder"></div>'}
+      <div class="pick-info">
+        <div class="pick-title" title="${a.title}">${a.title}</div>
+        <div class="pick-meta">${a.category_name || ''} • ${new Date(a.created_at).toLocaleDateString('ar-SA')}</div>
+      </div>
+      <span class="pick-order" id="order_${a.id}">${selectedIds.indexOf(a.id) >= 0 ? selectedIds.indexOf(a.id)+1 : ''}</span>
+    </div>
+  `).join('');
+  document.getElementById('selectedCount').textContent = `${selectedIds.length} مختار`;
+}
+
+function toggleArticle(id) {
+  const idx = selectedIds.indexOf(id);
+  if (idx >= 0) selectedIds.splice(idx, 1);
+  else selectedIds.push(id);
+  renderPicker();
+  updatePreview();
+}
+
+function updatePreview() {
+  const articles = selectedIds.map(id => allArticles.find(a => a.id === id)).filter(Boolean);
+  const title = document.getElementById('nlTitle').value || 'النشرة الأسبوعية';
+  const date = document.getElementById('nlDate').value;
+  const color = document.getElementById('nlColor').value || '#1565C0';
+  const heroCount = parseInt(document.getElementById('nlHeroCount').value) || 1;
+
+  const heroArticles = articles.slice(0, heroCount);
+  const gridArticles = articles.slice(heroCount);
+
+  let html = `
+    <div class="nl-header" style="background:linear-gradient(135deg,#0D1B2A 0%,${color} 100%);">
+      <div class="nl-header-logo">${siteName}</div>
+      <div class="nl-header-tagline">${siteTagline}</div>
+      <div class="nl-header-date">📅 ${date}</div>
+    </div>
+    <div class="nl-divider" style="background:linear-gradient(90deg,${color},#D4A017,${color});"></div>
+  `;
+
+  // Hero articles
+  heroArticles.forEach(a => {
+    html += `
+      <div class="nl-hero">
+        ${a.image_url ? `<img src="${a.image_url}" class="nl-hero-img" alt="">` : `<div class="nl-hero-img-placeholder" style="background:linear-gradient(135deg,${color},#42A5F5);"></div>`}
+        <div class="nl-hero-body" style="border-bottom-color:${color};">
+          ${a.category_name ? `<span class="nl-hero-cat" style="background:${color};">${a.category_name}</span>` : ''}
+          <h2 class="nl-hero-title">${a.title}</h2>
+          <p class="nl-hero-excerpt">${a.excerpt ? a.excerpt.substring(0,200) : ''}</p>
+          <div class="nl-hero-meta">بقلم ${a.author_name} • ${new Date(a.created_at).toLocaleDateString('ar-SA')}</div>
+        </div>
+      </div>
+    `;
+  });
+
+  // Grid articles
+  if (gridArticles.length > 0) {
+    html += `<div class="nl-section-title">📰 أخبار هذا الأسبوع</div>`;
+    html += `<div class="nl-articles-grid">`;
+    gridArticles.forEach(a => {
+      html += `
+        <div class="nl-article-item">
+          ${a.image_url ? `<img src="${a.image_url}" class="nl-article-img" alt="">` : `<div class="nl-article-img-placeholder" style="background:linear-gradient(135deg,${color}22,#CFD8DC);"></div>`}
+          ${a.category_name ? `<div class="nl-article-cat" style="color:${color};">${a.category_name}</div>` : ''}
+          <h3 class="nl-article-title">${a.title}</h3>
+          <p class="nl-article-excerpt">${a.excerpt ? a.excerpt.substring(0,100) : ''}</p>
+          <div class="nl-article-meta">${new Date(a.created_at).toLocaleDateString('ar-SA')}</div>
+        </div>
+      `;
+    });
+    html += `</div>`;
+  }
+
+  if (!articles.length) {
+    html += `<div style="padding:3rem;text-align:center;color:#90A4AE;font-family:'Cairo',sans-serif;">
+      <p style="font-size:1rem;">اختر مقالات من القائمة اليسرى لعرضها في النشرة</p>
+    </div>`;
+  }
+
+  // Footer
+  html += `
+    <div class="nl-divider" style="background:linear-gradient(90deg,${color},#D4A017,${color});"></div>
+    <div class="nl-footer">
+      <div class="nl-footer-name">${siteName}</div>
+      <div style="font-size:0.82rem;color:#78909C;">${siteTagline}</div>
+      <div class="nl-footer-copy">© ${new Date().getFullYear()} ${siteName} - جميع الحقوق محفوظة</div>
+    </div>
+  `;
+
+  document.getElementById('nlPreview').innerHTML = html;
+}
+
+async function downloadPDF() {
+  const preview = document.getElementById('nlPreview');
+  if (!selectedIds.length) { showToast('اختر مقالات أولاً', 'warning'); return; }
+
+  showToast('جارٍ إنشاء PDF...', 'info');
+
+  try {
+    const { jsPDF } = window.jspdf;
+    const canvas = await html2canvas(preview, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: '#ffffff',
+      logging: false,
+      width: preview.offsetWidth,
+      height: preview.offsetHeight
+    });
+
+    const imgData = canvas.toDataURL('image/jpeg', 0.92);
+    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
+    const canvasAspect = canvas.height / canvas.width;
+    const imgHeight = pdfWidth * canvasAspect;
+
+    let posY = 0;
+    let remainingHeight = imgHeight;
+
+    while (remainingHeight > 0) {
+      const pageImgHeight = Math.min(pdfHeight, remainingHeight);
+      pdf.addImage(imgData, 'JPEG', 0, -posY, pdfWidth, imgHeight);
+      remainingHeight -= pdfHeight;
+      posY += pdfHeight;
+      if (remainingHeight > 0) pdf.addPage();
+    }
+
+    const title = document.getElementById('nlTitle').value || 'newsletter';
+    const date = new Date().toISOString().split('T')[0];
+    pdf.save(`نشرة-${title}-${date}.pdf`);
+    showToast('تم تحميل PDF بنجاح!', 'success');
+  } catch (e) {
+    console.error(e);
+    showToast('خطأ في إنشاء PDF. جرّب الطباعة بدلاً من ذلك.', 'error');
+  }
+}
+
+function printPreview() {
+  const preview = document.getElementById('nlPreview');
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html>
+    <html lang="ar" dir="rtl">
+    <head>
+      <meta charset="UTF-8">
+      <title>${document.getElementById('nlTitle').value || 'النشرة'}</title>
+      <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+      <style>
+        body { font-family: 'Cairo', sans-serif; direction: rtl; margin: 0; }
+        @media print { @page { margin: 0; } }
+        ${document.querySelector('style').textContent}
+      </style>
+    </head>
+    <body>
+      ${preview.outerHTML}
+      <script>window.onload = function(){ window.print(); window.close(); }<\/script>
+    </body></html>`);
+  win.document.close();
+}
+
+async function saveNewsletter() {
+  const title = document.getElementById('nlTitle').value;
+  if (!title) { showToast('أدخل عنواناً للنشرة', 'warning'); return; }
+  if (!selectedIds.length) { showToast('اختر مقالات أولاً', 'warning'); return; }
+
+  const resp = await fetch('/api/newsletter', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ title, articles_ids: selectedIds, template: 'classic' })
+  });
+  if (resp.ok) { showToast('تم حفظ النشرة', 'success'); loadSavedNewsletters(); }
+  else showToast('خطأ في الحفظ', 'error');
+}
+
+async function loadSavedNewsletters() {
+  const resp = await fetch('/api/newsletter');
+  const { newsletters } = await resp.json();
+  const container = document.getElementById('savedNewsletters');
+  if (!newsletters.length) { container.innerHTML = '<div style="font-size:0.82rem;color:#90A4AE;text-align:center;">لا توجد نشرات محفوظة</div>'; return; }
+  container.innerHTML = newsletters.map(n => `
+    <div style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem;background:var(--bg);border-radius:6px;">
+      <span style="flex:1;font-size:0.82rem;font-weight:600;" class="td-title" title="${n.title}">${n.title}</span>
+      <span style="font-size:0.72rem;color:#90A4AE;">${new Date(n.created_at).toLocaleDateString('ar-SA')}</span>
+      <button class="btn-icon btn-edit" onclick="loadNewsletter(${n.id})" title="تحميل"><i data-feather="upload"></i></button>
+      <button class="btn-icon btn-delete" onclick="deleteNewsletter(${n.id})" title="حذف"><i data-feather="trash-2"></i></button>
+    </div>
+  `).join('');
+  feather.replace();
+}
+
+async function loadNewsletter(id) {
+  const resp = await fetch(`/api/newsletter/${id}`);
+  const { newsletter, articles } = await resp.json();
+  document.getElementById('nlTitle').value = newsletter.title;
+  selectedIds = articles.map(a => a.id);
+  renderPicker();
+  updatePreview();
+  showToast('تم تحميل النشرة', 'success');
+}
+
+async function deleteNewsletter(id) {
+  if (!confirm('حذف هذه النشرة؟')) return;
+  await fetch(`/api/newsletter/${id}`, { method: 'DELETE' });
+  showToast('تم الحذف', 'success');
+  loadSavedNewsletters();
+}
+
+function toggleSidebar() { document.getElementById('adminSidebar').classList.toggle('open'); }
+async function logout() { await fetch('/api/auth/logout', { method: 'POST' }); window.location.href = '/admin/login.html'; }
+
+function showToast(msg, type = 'info') {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = `toast toast-${type}`;
+  t.innerHTML = `<span>${msg}</span><button class="toast-close" onclick="this.parentElement.remove()">×</button>`;
+  c.appendChild(t);
+  setTimeout(() => t.remove(), 4000);
+}
+
+init();
+</script>
+</body>
+</html>

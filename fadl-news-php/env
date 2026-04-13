@@ -1,0 +1,43 @@
+#--------------------------------------------------------------------
+# Copy this file to ".env" and update values for your server
+#--------------------------------------------------------------------
+
+CI_ENVIRONMENT = production
+
+#--------------------------------------------------------------------
+# APP
+#--------------------------------------------------------------------
+app.baseURL = 'https://yourdomain.com/'
+app.forceGlobalSecureRequests = false
+app.indexPage = ''
+app.sessionDriver = 'CodeIgniter\Session\Handlers\FileHandler'
+app.sessionCookieName = 'ci_session'
+app.sessionExpiration = 7200
+app.sessionSavePath = WRITEPATH.'session'
+
+#--------------------------------------------------------------------
+# DATABASE (MySQL on Namecheap cPanel)
+#--------------------------------------------------------------------
+database.default.hostname = localhost
+database.default.database = cpaneluser_fadlnews
+database.default.username = cpaneluser_dbuser
+database.default.password = your_db_password
+database.default.DBDriver = MySQLi
+database.default.DBPrefix =
+database.default.port = 3306
+database.default.charset = utf8mb4
+database.default.DBCollat = utf8mb4_unicode_ci
+
+#--------------------------------------------------------------------
+# SECURITY / APP SECRETS
+#--------------------------------------------------------------------
+encryption.key = hex2bin:CHANGE_TO_A_RANDOM_64_CHAR_HEX_STRING
+
+# Default admin (created on first migration)
+admin.username = admin
+admin.email = admin@yourdomain.com
+admin.password = Admin@123456
+
+# Site
+site.name = 'مدونة فضل محمد خير'
+site.tagline = 'الخبر الصادق والرأي الحر'

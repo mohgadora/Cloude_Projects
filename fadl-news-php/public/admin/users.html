@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>إدارة المستخدمين - مدونة فضل محمد خير</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/feather-icons@4.29.2/dist/feather.min.js"></script>
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+<div class="admin-layout">
+  <aside class="admin-sidebar" id="adminSidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-site-name">مدونة فضل محمد خير</div>
+      <div class="sidebar-tagline">لوحة التحكم</div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">الرئيسية</div>
+      <a href="/admin/" class="sidebar-link"><i data-feather="grid"></i> لوحة التحكم</a>
+      <a href="/" target="_blank" class="sidebar-link"><i data-feather="globe"></i> عرض الموقع</a>
+      <div class="nav-section-title">إدارة المحتوى</div>
+      <a href="/admin/articles.html" class="sidebar-link"><i data-feather="file-text"></i> إدارة الأخبار</a>
+      <a href="/admin/new-article.html" class="sidebar-link"><i data-feather="plus-circle"></i> خبر جديد</a>
+      <div class="nav-section-title">إدارة الموقع</div>
+      <a href="/admin/users.html" class="sidebar-link active"><i data-feather="users"></i> المستخدمون</a>
+      <a href="/admin/newsletter.html" class="sidebar-link"><i data-feather="mail"></i> النشرة البريدية</a>
+      <a href="/admin/settings.html" class="sidebar-link"><i data-feather="settings"></i> الإعدادات</a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="user-avatar" id="userAvatar">A</div>
+      <div><div class="user-name" id="userName">...</div><div class="user-role" id="userRole">...</div></div>
+      <button class="user-logout" onclick="logout()"><i data-feather="log-out"></i></button>
+    </div>
+  </aside>
+
+  <div class="admin-main">
+    <header class="admin-header">
+      <div style="display:flex;align-items:center;gap:0.75rem;">
+        <button class="sidebar-toggle" onclick="toggleSidebar()"><i data-feather="menu"></i></button>
+        <h1 class="header-title">إدارة المستخدمين</h1>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-primary btn-sm" onclick="openAddModal()"><i data-feather="user-plus"></i> إضافة مستخدم</button>
+      </div>
+    </header>
+
+    <div class="admin-content">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title-sm"><i data-feather="users"></i> قائمة المستخدمين</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>المستخدم</th>
+                <th>البريد الإلكتروني</th>
+                <th>الدور</th>
+                <th>الحالة</th>
+                <th>آخر دخول</th>
+                <th>تاريخ الإنشاء</th>
+                <th width="100">إجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="usersBody">
+              <tr><td colspan="7" style="text-align:center;padding:3rem;">
+                <div class="spinner spinner-dark" style="margin:0 auto;width:28px;height:28px;"></div>
+              </td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit User Modal -->
+<div class="modal-overlay" id="userModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="modalTitle">إضافة مستخدم جديد</span>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <form id="userForm" class="form-grid" style="gap:0.85rem;">
+        <div class="form-group">
+          <label class="form-label">اسم المستخدم *</label>
+          <input type="text" id="uUsername" class="form-control" required placeholder="username">
+        </div>
+        <div class="form-group">
+          <label class="form-label">البريد الإلكتروني *</label>
+          <input type="email" id="uEmail" class="form-control" required placeholder="user@example.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">كلمة المرور <span id="passNote" style="color:#90A4AE;font-weight:400;">(8 أحرف على الأقل)</span></label>
+          <input type="password" id="uPassword" class="form-control" placeholder="••••••••" minlength="8">
+        </div>
+        <div class="form-group">
+          <label class="form-label">الدور</label>
+          <select id="uRole" class="form-control">
+            <option value="editor">محرر</option>
+            <option value="admin">مدير</option>
+          </select>
+        </div>
+        <div class="form-group toggle-wrap" id="activeToggleWrap">
+          <label class="toggle">
+            <input type="checkbox" id="uActive" checked>
+            <span class="toggle-slider"></span>
+          </label>
+          <span class="toggle-label">حساب مفعّل</span>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="saveUser()" id="saveUserBtn"><i data-feather="save"></i> حفظ</button>
+      <button class="btn btn-gray" onclick="closeModal()">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirm Modal -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal" style="max-width:400px;">
+    <div class="modal-header">
+      <span class="modal-title">تأكيد الحذف</span>
+      <button class="modal-close" onclick="closeDeleteModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <p>هل أنت متأكد من حذف المستخدم "<strong id="deleteUserName"></strong>"؟</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-danger" onclick="confirmDelete()"><i data-feather="trash-2"></i> حذف</button>
+      <button class="btn btn-gray" onclick="closeDeleteModal()">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+feather.replace();
+let editUserId = null;
+let deleteUserId = null;
+
+async function init() {
+  const resp = await fetch('/api/auth/me');
+  if (!resp.ok) { window.location.href = '/admin/login.html'; return; }
+  const { user } = await resp.json();
+  if (user.role !== 'admin') { showToast('صلاحيات المدير مطلوبة', 'error'); setTimeout(() => window.location.href = '/admin/', 1500); return; }
+  document.getElementById('userAvatar').textContent = user.username[0].toUpperCase();
+  document.getElementById('userName').textContent = user.username;
+  document.getElementById('userRole').textContent = 'مدير';
+  await loadUsers();
+}
+
+async function loadUsers() {
+  const resp = await fetch('/api/users');
+  const { users } = await resp.json();
+  const tbody = document.getElementById('usersBody');
+  if (!users.length) { tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><i data-feather="users"></i><p>لا يوجد مستخدمون</p></div></td></tr>'; feather.replace(); return; }
+  tbody.innerHTML = users.map(u => `
+    <tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:0.6rem;">
+          <div style="width:36px;height:36px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.9rem;">${u.username[0].toUpperCase()}</div>
+          <span style="font-weight:600;">${u.username}</span>
+        </div>
+      </td>
+      <td style="font-size:0.85rem;">${u.email}</td>
+      <td><span class="status-badge status-${u.role}">${u.role === 'admin' ? 'مدير' : 'محرر'}</span></td>
+      <td><span class="status-badge status-${u.is_active ? 'active' : 'inactive'}">${u.is_active ? 'مفعّل' : 'موقوف'}</span></td>
+      <td style="font-size:0.8rem;">${u.last_login ? new Date(u.last_login).toLocaleDateString('ar-SA') : 'لم يدخل بعد'}</td>
+      <td style="font-size:0.8rem;">${new Date(u.created_at).toLocaleDateString('ar-SA')}</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-icon btn-edit" onclick="editUser(${u.id})" title="تعديل"><i data-feather="edit-2"></i></button>
+          <button class="btn-icon btn-delete" onclick="deleteUser(${u.id}, '${u.username}')" title="حذف"><i data-feather="trash-2"></i></button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+  feather.replace();
+}
+
+function openAddModal() {
+  editUserId = null;
+  document.getElementById('modalTitle').textContent = 'إضافة مستخدم جديد';
+  document.getElementById('uUsername').value = '';
+  document.getElementById('uEmail').value = '';
+  document.getElementById('uPassword').value = '';
+  document.getElementById('uRole').value = 'editor';
+  document.getElementById('uActive').checked = true;
+  document.getElementById('uPassword').required = true;
+  document.getElementById('passNote').textContent = '(8 أحرف على الأقل)';
+  document.getElementById('userModal').classList.add('open');
+  feather.replace();
+}
+
+async function editUser(id) {
+  editUserId = id;
+  const resp = await fetch('/api/users');
+  const { users } = await resp.json();
+  const u = users.find(x => x.id == id);
+  if (!u) return;
+  document.getElementById('modalTitle').textContent = 'تعديل مستخدم';
+  document.getElementById('uUsername').value = u.username;
+  document.getElementById('uEmail').value = u.email;
+  document.getElementById('uPassword').value = '';
+  document.getElementById('uRole').value = u.role;
+  document.getElementById('uActive').checked = !!u.is_active;
+  document.getElementById('uPassword').required = false;
+  document.getElementById('passNote').textContent = '(اتركها فارغة للإبقاء على الحالية)';
+  document.getElementById('userModal').classList.add('open');
+  feather.replace();
+}
+
+async function saveUser() {
+  const btn = document.getElementById('saveUserBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>';
+
+  const payload = {
+    username: document.getElementById('uUsername').value,
+    email: document.getElementById('uEmail').value,
+    password: document.getElementById('uPassword').value || undefined,
+    role: document.getElementById('uRole').value,
+    is_active: document.getElementById('uActive').checked ? 1 : 0,
+  };
+
+  const url = editUserId ? `/api/users/${editUserId}` : '/api/users';
+  const method = editUserId ? 'PUT' : 'POST';
+
+  const resp = await fetch(url, {
+    method,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  const data = await resp.json();
+
+  if (resp.ok) {
+    showToast(editUserId ? 'تم تحديث المستخدم' : 'تم إضافة المستخدم', 'success');
+    closeModal();
+    loadUsers();
+  } else {
+    showToast(data.error || 'خطأ في الحفظ', 'error');
+  }
+  btn.disabled = false;
+  btn.innerHTML = '<i data-feather="save"></i> حفظ';
+  feather.replace();
+}
+
+function deleteUser(id, name) {
+  deleteUserId = id;
+  document.getElementById('deleteUserName').textContent = name;
+  document.getElementById('deleteModal').classList.add('open');
+}
+
+async function confirmDelete() {
+  const resp = await fetch(`/api/users/${deleteUserId}`, { method: 'DELETE' });
+  if (resp.ok) { showToast('تم حذف المستخدم', 'success'); closeDeleteModal(); loadUsers(); }
+  else { const d = await resp.json(); showToast(d.error || 'خطأ في الحذف', 'error'); }
+}
+
+function closeModal() { document.getElementById('userModal').classList.remove('open'); }
+function closeDeleteModal() { document.getElementById('deleteModal').classList.remove('open'); }
+function toggleSidebar() { document.getElementById('adminSidebar').classList.toggle('open'); }
+async function logout() { await fetch('/api/auth/logout', { method: 'POST' }); window.location.href = '/admin/login.html'; }
+
+function showToast(msg, type = 'info') {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = `toast toast-${type}`;
+  t.innerHTML = `<span>${msg}</span><button class="toast-close" onclick="this.parentElement.remove()">×</button>`;
+  c.appendChild(t);
+  setTimeout(() => t.remove(), 4000);
+}
+
+init();
+</script>
+</body>
+</html>

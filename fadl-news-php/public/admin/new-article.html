@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>خبر جديد - مدونة فضل محمد خير</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/feather-icons@4.29.2/dist/feather.min.js"></script>
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+<div class="admin-layout">
+  <!-- Sidebar -->
+  <aside class="admin-sidebar" id="adminSidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-site-name">مدونة فضل محمد خير</div>
+      <div class="sidebar-tagline">لوحة التحكم</div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">الرئيسية</div>
+      <a href="/admin/" class="sidebar-link"><i data-feather="grid"></i> لوحة التحكم</a>
+      <a href="/" target="_blank" class="sidebar-link"><i data-feather="globe"></i> عرض الموقع</a>
+      <div class="nav-section-title">إدارة المحتوى</div>
+      <a href="/admin/articles.html" class="sidebar-link"><i data-feather="file-text"></i> إدارة الأخبار</a>
+      <a href="/admin/new-article.html" class="sidebar-link active"><i data-feather="plus-circle"></i> خبر جديد</a>
+      <div class="nav-section-title">إدارة الموقع</div>
+      <a href="/admin/users.html" class="sidebar-link"><i data-feather="users"></i> المستخدمون</a>
+      <a href="/admin/newsletter.html" class="sidebar-link"><i data-feather="mail"></i> النشرة البريدية</a>
+      <a href="/admin/settings.html" class="sidebar-link"><i data-feather="settings"></i> الإعدادات</a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="user-avatar" id="userAvatar">A</div>
+      <div><div class="user-name" id="userName">...</div><div class="user-role" id="userRole">...</div></div>
+      <button class="user-logout" onclick="logout()"><i data-feather="log-out"></i></button>
+    </div>
+  </aside>
+
+  <div class="admin-main">
+    <header class="admin-header">
+      <div style="display:flex;align-items:center;gap:0.75rem;">
+        <button class="sidebar-toggle" onclick="toggleSidebar()"><i data-feather="menu"></i></button>
+        <h1 class="header-title" id="pageTitle">خبر جديد</h1>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-gray btn-sm" onclick="saveDraft()"><i data-feather="save"></i> حفظ مسودة</button>
+        <button class="btn btn-primary btn-sm" onclick="publishArticle()" id="publishBtn"><i data-feather="send"></i> نشر الخبر</button>
+      </div>
+    </header>
+
+    <div class="admin-content">
+      <form id="articleForm" enctype="multipart/form-data">
+        <div style="display:grid;grid-template-columns:1fr 320px;gap:1.5rem;align-items:start;">
+
+          <!-- Main Column -->
+          <div style="display:flex;flex-direction:column;gap:1.25rem;">
+
+            <!-- Title -->
+            <div class="card">
+              <div class="card-body">
+                <div class="form-group">
+                  <label class="form-label">عنوان الخبر *</label>
+                  <input type="text" name="title" id="titleInput" class="form-control"
+                         style="font-size:1.15rem;font-weight:700;padding:0.85rem 1rem;"
+                         placeholder="أدخل عنوان الخبر هنا..." required>
+                </div>
+                <div class="form-group" style="margin-top:0.75rem;">
+                  <label class="form-label">مقتطف / ملخص</label>
+                  <textarea name="excerpt" id="excerptInput" class="form-control" rows="2"
+                            placeholder="ملخص قصير للخبر (يظهر في نتائج البحث وقوائم الأخبار)"></textarea>
+                </div>
+              </div>
+            </div>
+
+            <!-- Content Editor -->
+            <div class="card">
+              <div class="card-header">
+                <span class="card-title-sm"><i data-feather="edit-3"></i> محتوى الخبر *</span>
+              </div>
+              <div class="card-body" style="padding-bottom:0;">
+                <div class="editor-toolbar">
+                  <button type="button" class="editor-btn" onclick="fmt('bold')" title="غامق"><strong>B</strong></button>
+                  <button type="button" class="editor-btn" onclick="fmt('italic')" title="مائل"><em>I</em></button>
+                  <button type="button" class="editor-btn" onclick="fmt('underline')" title="تسطير"><u>U</u></button>
+                  <button type="button" class="editor-btn" onclick="fmtBlock('h2')" title="عنوان 2">H2</button>
+                  <button type="button" class="editor-btn" onclick="fmtBlock('h3')" title="عنوان 3">H3</button>
+                  <button type="button" class="editor-btn" onclick="fmt('insertUnorderedList')" title="قائمة نقطية">• قائمة</button>
+                  <button type="button" class="editor-btn" onclick="fmt('insertOrderedList')" title="قائمة رقمية">1. قائمة</button>
+                  <button type="button" class="editor-btn" onclick="fmtBlock('blockquote')" title="اقتباس">❝ اقتباس</button>
+                  <button type="button" class="editor-btn" onclick="insertLink()" title="رابط"><i data-feather="link"></i></button>
+                  <button type="button" class="editor-btn" onclick="insertImage()" title="صورة"><i data-feather="image"></i></button>
+                  <button type="button" class="editor-btn" onclick="fmt('removeFormat')" title="مسح التنسيق"><i data-feather="x-circle"></i></button>
+                  <button type="button" class="editor-btn" onclick="document.execCommand('undo')" title="تراجع"><i data-feather="corner-up-left"></i></button>
+                  <button type="button" class="editor-btn" onclick="document.execCommand('redo')" title="إعادة"><i data-feather="corner-up-right"></i></button>
+                </div>
+                <div id="editorContent" class="editor-content" contenteditable="true"
+                     dir="rtl" placeholder="اكتب محتوى الخبر هنا..."></div>
+                <input type="hidden" name="content" id="contentInput">
+              </div>
+            </div>
+
+            <!-- SEO Section -->
+            <div class="card">
+              <div class="card-header">
+                <span class="card-title-sm"><i data-feather="search"></i> إعدادات SEO (اختياري)</span>
+              </div>
+              <div class="card-body">
+                <div class="form-grid form-grid-2" style="gap:0.85rem;">
+                  <div class="form-group">
+                    <label class="form-label">عنوان SEO (يظهر في جوجل)</label>
+                    <input type="text" name="seo_title" class="form-control" placeholder="اتركه فارغاً لاستخدام عنوان الخبر" maxlength="70">
+                    <span class="form-hint">الحد الأقصى 70 حرف</span>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">وصف SEO</label>
+                    <input type="text" name="seo_description" class="form-control" placeholder="وصف لمحركات البحث" maxlength="160">
+                    <span class="form-hint">الحد الأقصى 160 حرف</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sidebar Column -->
+          <div style="display:flex;flex-direction:column;gap:1.25rem;position:sticky;top:70px;">
+
+            <!-- Publish Settings -->
+            <div class="card">
+              <div class="card-header">
+                <span class="card-title-sm"><i data-feather="settings"></i> إعدادات النشر</span>
+              </div>
+              <div class="card-body" style="display:flex;flex-direction:column;gap:0.85rem;">
+                <div class="form-group">
+                  <label class="form-label">القسم</label>
+                  <select name="category_id" id="categorySelect" class="form-control">
+                    <option value="">اختر القسم</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">الحالة</label>
+                  <select name="status" id="statusSelect" class="form-control">
+                    <option value="published">منشور</option>
+                    <option value="draft">مسودة</option>
+                  </select>
+                </div>
+                <div class="toggle-wrap">
+                  <label class="toggle">
+                    <input type="checkbox" id="featuredToggle" name="featured_val">
+                    <span class="toggle-slider"></span>
+                  </label>
+                  <span class="toggle-label">خبر مميز (يظهر في الواجهة)</span>
+                </div>
+                <div class="toggle-wrap">
+                  <label class="toggle">
+                    <input type="checkbox" id="breakingToggle" name="breaking_val">
+                    <span class="toggle-slider"></span>
+                  </label>
+                  <span class="toggle-label">خبر عاجل (يظهر في الشريط)</span>
+                </div>
+                <div id="publishActions" style="display:flex;flex-direction:column;gap:0.5rem;margin-top:0.25rem;">
+                  <button type="button" class="btn btn-primary btn-lg" onclick="publishArticle()" id="mainPublishBtn">
+                    <i data-feather="send"></i> نشر الخبر
+                  </button>
+                  <button type="button" class="btn btn-gray" onclick="saveDraft()">
+                    <i data-feather="save"></i> حفظ مسودة
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Image Upload -->
+            <div class="card">
+              <div class="card-header">
+                <span class="card-title-sm"><i data-feather="image"></i> صورة الخبر</span>
+              </div>
+              <div class="card-body">
+                <div class="upload-zone" id="uploadZone" onclick="document.getElementById('imageInput').click()">
+                  <input type="file" id="imageInput" accept="image/*" style="display:none">
+                  <div id="uploadPlaceholder">
+                    <div class="upload-icon">🖼️</div>
+                    <div class="upload-text">اضغط لرفع الصورة</div>
+                    <div class="upload-hint">JPG, PNG, WEBP — حجم أقصى 10MB</div>
+                  </div>
+                  <div id="previewWrap" style="display:none;">
+                    <img id="previewImg" src="" alt="معاينة" style="max-height:180px;max-width:100%;border-radius:8px;">
+                    <button type="button" class="upload-remove" onclick="removeImage(event)">×</button>
+                  </div>
+                </div>
+                <input type="hidden" name="image_url" id="imageUrl">
+                <div class="form-group" style="margin-top:0.65rem;">
+                  <label class="form-label">تعليق الصورة</label>
+                  <input type="text" name="image_caption" class="form-control" placeholder="وصف الصورة (اختياري)">
+                </div>
+              </div>
+            </div>
+
+            <!-- Tags -->
+            <div class="card">
+              <div class="card-header">
+                <span class="card-title-sm"><i data-feather="tag"></i> الوسوم (Tags)</span>
+              </div>
+              <div class="card-body">
+                <div class="tags-input-wrap" id="tagsWrap" onclick="document.getElementById('tagInput').focus()">
+                  <input type="text" id="tagInput" class="tag-input-field" placeholder="أضف وسماً واضغط Enter">
+                </div>
+                <input type="hidden" name="tags" id="tagsHidden" value="[]">
+                <span class="form-hint" style="margin-top:0.35rem;display:block;">اضغط Enter أو الفاصلة لإضافة وسم</span>
+              </div>
+            </div>
+
+            <!-- Social Auto Post -->
+            <div class="card">
+              <div class="card-header">
+                <span class="card-title-sm"><i data-feather="share-2"></i> النشر التلقائي</span>
+              </div>
+              <div class="card-body" style="font-size:0.85rem;color:#607D8B;line-height:1.7;">
+                سيتم نشر الخبر تلقائياً على منصات التواصل المُفعّلة في الإعدادات عند النشر.
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+feather.replace();
+let tags = [];
+let editId = null;
+
+async function init() {
+  await checkAuth();
+  await loadCategories();
+  setupEditor();
+  setupTagInput();
+  setupImageUpload();
+  checkEditMode();
+}
+
+async function checkAuth() {
+  const resp = await fetch('/api/auth/me');
+  if (!resp.ok) { window.location.href = '/admin/login.html'; return; }
+  const { user } = await resp.json();
+  document.getElementById('userAvatar').textContent = user.username[0].toUpperCase();
+  document.getElementById('userName').textContent = user.username;
+  document.getElementById('userRole').textContent = user.role === 'admin' ? 'مدير' : 'محرر';
+}
+
+async function checkEditMode() {
+  const params = new URLSearchParams(window.location.search);
+  editId = params.get('id');
+  if (!editId) return;
+  document.getElementById('pageTitle').textContent = 'تعديل الخبر';
+  document.getElementById('mainPublishBtn').innerHTML = '<i data-feather="save"></i> حفظ التعديلات';
+  document.querySelector('.header-title').textContent = 'تعديل الخبر';
+
+  const resp = await fetch(`/api/articles/${window.location.search.split('slug=')[1] || ''}`, {method:'GET'});
+  // Fetch by id - need to get the article
+  const articleResp = await fetch(`/api/articles?status=all&limit=1000`);
+  const data = await articleResp.json();
+  const article = data.articles.find(a => a.id == editId);
+  if (!article) { showToast('الخبر غير موجود', 'error'); return; }
+
+  document.getElementById('titleInput').value = article.title;
+  document.getElementById('excerptInput').value = article.excerpt || '';
+  document.getElementById('editorContent').innerHTML = article.content;
+  document.getElementById('categorySelect').value = article.category_id || '';
+  document.getElementById('statusSelect').value = article.status;
+  document.getElementById('featuredToggle').checked = !!article.featured;
+  document.getElementById('breakingToggle').checked = !!article.breaking;
+
+  // SEO
+  const seoTitle = document.querySelector('[name="seo_title"]');
+  const seoDesc = document.querySelector('[name="seo_description"]');
+  const imgCaption = document.querySelector('[name="image_caption"]');
+  if (seoTitle) seoTitle.value = article.seo_title || '';
+  if (seoDesc) seoDesc.value = article.seo_description || '';
+  if (imgCaption) imgCaption.value = article.image_caption || '';
+
+  if (article.image_url) {
+    document.getElementById('imageUrl').value = article.image_url;
+    document.getElementById('previewImg').src = article.image_url;
+    document.getElementById('previewWrap').style.display = 'block';
+    document.getElementById('uploadPlaceholder').style.display = 'none';
+  }
+
+  try {
+    tags = JSON.parse(article.tags || '[]');
+    renderTags();
+  } catch {}
+
+  feather.replace();
+}
+
+async function loadCategories() {
+  const resp = await fetch('/api/articles/meta/categories');
+  const { categories } = await resp.json();
+  const sel = document.getElementById('categorySelect');
+  categories.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c.id;
+    opt.textContent = c.name;
+    sel.appendChild(opt);
+  });
+}
+
+function setupEditor() {
+  const editor = document.getElementById('editorContent');
+  editor.setAttribute('placeholder', 'اكتب محتوى الخبر هنا...');
+  // CSS for placeholder
+  const style = document.createElement('style');
+  style.textContent = `[contenteditable=true]:empty:before{content:attr(placeholder);color:#B0BEC5;pointer-events:none;}`;
+  document.head.appendChild(style);
+}
+
+function fmt(cmd) { document.execCommand(cmd, false, null); document.getElementById('editorContent').focus(); }
+function fmtBlock(tag) {
+  document.execCommand('formatBlock', false, tag);
+  document.getElementById('editorContent').focus();
+}
+function insertLink() {
+  const url = prompt('أدخل الرابط:');
+  if (url) document.execCommand('createLink', false, url);
+  document.getElementById('editorContent').focus();
+}
+function insertImage() {
+  const url = prompt('أدخل رابط الصورة:');
+  if (url) document.execCommand('insertImage', false, url);
+  document.getElementById('editorContent').focus();
+}
+
+function setupTagInput() {
+  const input = document.getElementById('tagInput');
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      const val = input.value.trim().replace(/,/g, '');
+      if (val && !tags.includes(val)) {
+        tags.push(val);
+        renderTags();
+        input.value = '';
+      }
+    } else if (e.key === 'Backspace' && !input.value && tags.length) {
+      tags.pop();
+      renderTags();
+    }
+  });
+}
+
+function renderTags() {
+  const wrap = document.getElementById('tagsWrap');
+  const existing = wrap.querySelectorAll('.tag-chip');
+  existing.forEach(e => e.remove());
+  const input = document.getElementById('tagInput');
+  tags.forEach((tag, i) => {
+    const chip = document.createElement('span');
+    chip.className = 'tag-chip';
+    chip.innerHTML = `${tag} <button class="tag-chip-remove" onclick="removeTag(${i})">×</button>`;
+    wrap.insertBefore(chip, input);
+  });
+  document.getElementById('tagsHidden').value = JSON.stringify(tags);
+}
+
+function removeTag(i) { tags.splice(i, 1); renderTags(); }
+
+function setupImageUpload() {
+  const input = document.getElementById('imageInput');
+  input.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      document.getElementById('previewImg').src = ev.target.result;
+      document.getElementById('previewWrap').style.display = 'block';
+      document.getElementById('uploadPlaceholder').style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+    // Upload immediately
+    const fd = new FormData();
+    fd.append('image', file);
+    showToast('جارٍ رفع الصورة...', 'info');
+    const resp = await fetch('/api/upload', { method: 'POST', body: fd });
+    const data = await resp.json();
+    if (resp.ok) {
+      document.getElementById('imageUrl').value = data.url;
+      showToast('تم رفع الصورة بنجاح', 'success');
+    } else {
+      showToast(data.error || 'خطأ في رفع الصورة', 'error');
+    }
+  });
+}
+
+function removeImage(e) {
+  e.stopPropagation();
+  document.getElementById('imageUrl').value = '';
+  document.getElementById('previewImg').src = '';
+  document.getElementById('previewWrap').style.display = 'none';
+  document.getElementById('uploadPlaceholder').style.display = 'block';
+  document.getElementById('imageInput').value = '';
+}
+
+async function saveDraft() {
+  document.getElementById('statusSelect').value = 'draft';
+  await submitForm();
+}
+
+async function publishArticle() {
+  document.getElementById('statusSelect').value = 'published';
+  await submitForm();
+}
+
+async function submitForm() {
+  const editor = document.getElementById('editorContent');
+  const content = editor.innerHTML.trim();
+  if (!document.getElementById('titleInput').value.trim()) { showToast('العنوان مطلوب', 'error'); return; }
+  if (!content || content === '') { showToast('المحتوى مطلوب', 'error'); return; }
+  document.getElementById('contentInput').value = content;
+
+  const btn = document.getElementById('mainPublishBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> جارٍ الحفظ...';
+
+  const formData = new FormData();
+  formData.append('title', document.getElementById('titleInput').value.trim());
+  formData.append('content', content);
+  formData.append('excerpt', document.getElementById('excerptInput').value);
+  formData.append('category_id', document.getElementById('categorySelect').value);
+  formData.append('status', document.getElementById('statusSelect').value);
+  formData.append('featured', document.getElementById('featuredToggle').checked ? '1' : '0');
+  formData.append('breaking', document.getElementById('breakingToggle').checked ? '1' : '0');
+  formData.append('tags', document.getElementById('tagsHidden').value);
+  formData.append('image_url', document.getElementById('imageUrl').value);
+
+  const seoTitle = document.querySelector('[name="seo_title"]');
+  const seoDesc = document.querySelector('[name="seo_description"]');
+  const imgCaption = document.querySelector('[name="image_caption"]');
+  if (seoTitle) formData.append('seo_title', seoTitle.value);
+  if (seoDesc) formData.append('seo_description', seoDesc.value);
+  if (imgCaption) formData.append('image_caption', imgCaption.value);
+
+  const url = editId ? `/api/articles/${editId}` : '/api/articles';
+  const method = editId ? 'PUT' : 'POST';
+
+  const resp = await fetch(url, { method, body: formData });
+  const data = await resp.json();
+
+  if (resp.ok) {
+    const status = data.article.status === 'published' ? 'تم نشر الخبر بنجاح!' : 'تم حفظ المسودة';
+    showToast(status, 'success');
+    setTimeout(() => {
+      window.location.href = `/admin/articles.html`;
+    }, 1200);
+  } else {
+    showToast(data.error || 'خطأ في الحفظ', 'error');
+    btn.disabled = false;
+    btn.innerHTML = editId ? '<i data-feather="save"></i> حفظ التعديلات' : '<i data-feather="send"></i> نشر الخبر';
+    feather.replace();
+  }
+}
+
+function toggleSidebar() { document.getElementById('adminSidebar').classList.toggle('open'); }
+async function logout() { await fetch('/api/auth/logout', { method: 'POST' }); window.location.href = '/admin/login.html'; }
+
+function showToast(msg, type = 'info') {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = `toast toast-${type}`;
+  t.innerHTML = `<span>${msg}</span><button class="toast-close" onclick="this.parentElement.remove()">×</button>`;
+  c.appendChild(t);
+  setTimeout(() => t.remove(), 4000);
+}
+
+init();
+</script>
+</body>
+</html>

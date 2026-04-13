@@ -1,0 +1,14 @@
+{
+    "name": "fadl-news/site",
+    "description": "مدونة فضل محمد خير - موقع إخباري احترافي (CodeIgniter 4)",
+    "type": "project",
+    "require": {
+        "php": "^8.1",
+        "codeigniter4/framework": "^4.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        }
+    }
+}

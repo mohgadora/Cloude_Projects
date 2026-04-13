@@ -1,0 +1,20 @@
+/vendor/
+/node_modules/
+.env
+.DS_Store
+Thumbs.db
+
+# CI4 writable data
+writable/cache/*
+!writable/cache/.gitkeep
+writable/logs/*
+!writable/logs/.gitkeep
+writable/session/*
+!writable/session/.gitkeep
+writable/uploads/*
+!writable/uploads/.gitkeep
+writable/debugbar/*
+
+# User uploads
+public/uploads/*
+!public/uploads/.gitkeep

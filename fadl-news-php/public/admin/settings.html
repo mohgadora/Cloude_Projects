@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>الإعدادات - مدونة فضل محمد خير</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/feather-icons@4.29.2/dist/feather.min.js"></script>
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+<div class="admin-layout">
+  <aside class="admin-sidebar" id="adminSidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-site-name">مدونة فضل محمد خير</div>
+      <div class="sidebar-tagline">لوحة التحكم</div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">الرئيسية</div>
+      <a href="/admin/" class="sidebar-link"><i data-feather="grid"></i> لوحة التحكم</a>
+      <a href="/" target="_blank" class="sidebar-link"><i data-feather="globe"></i> عرض الموقع</a>
+      <div class="nav-section-title">إدارة المحتوى</div>
+      <a href="/admin/articles.html" class="sidebar-link"><i data-feather="file-text"></i> إدارة الأخبار</a>
+      <a href="/admin/new-article.html" class="sidebar-link"><i data-feather="plus-circle"></i> خبر جديد</a>
+      <div class="nav-section-title">إدارة الموقع</div>
+      <a href="/admin/users.html" class="sidebar-link"><i data-feather="users"></i> المستخدمون</a>
+      <a href="/admin/newsletter.html" class="sidebar-link"><i data-feather="mail"></i> النشرة البريدية</a>
+      <a href="/admin/settings.html" class="sidebar-link active"><i data-feather="settings"></i> الإعدادات</a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="user-avatar" id="userAvatar">A</div>
+      <div><div class="user-name" id="userName">...</div><div class="user-role" id="userRole">...</div></div>
+      <button class="user-logout" onclick="logout()"><i data-feather="log-out"></i></button>
+    </div>
+  </aside>
+
+  <div class="admin-main">
+    <header class="admin-header">
+      <div style="display:flex;align-items:center;gap:0.75rem;">
+        <button class="sidebar-toggle" onclick="toggleSidebar()"><i data-feather="menu"></i></button>
+        <h1 class="header-title">إعدادات الموقع</h1>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-primary" onclick="saveSettings()"><i data-feather="save"></i> حفظ الإعدادات</button>
+      </div>
+    </header>
+
+    <div class="admin-content">
+      <!-- Tabs -->
+      <div class="settings-tabs">
+        <button class="settings-tab active" onclick="switchTab('general')"><i data-feather="globe"></i> عام</button>
+        <button class="settings-tab" onclick="switchTab('social')"><i data-feather="share-2"></i> منصات التواصل</button>
+        <button class="settings-tab" onclick="switchTab('seo')"><i data-feather="search"></i> SEO وجوجل</button>
+        <button class="settings-tab" onclick="switchTab('password')"><i data-feather="lock"></i> كلمة المرور</button>
+      </div>
+
+      <!-- General Tab -->
+      <div class="tab-content active" id="tab-general">
+        <div class="card">
+          <div class="card-header"><span class="card-title-sm"><i data-feather="settings"></i> إعدادات عامة</span></div>
+          <div class="card-body">
+            <div class="form-grid form-grid-2" style="gap:1rem;">
+              <div class="form-group">
+                <label class="form-label">اسم الموقع</label>
+                <input type="text" id="s_site_name" class="form-control" placeholder="مدونة فضل محمد خير">
+              </div>
+              <div class="form-group">
+                <label class="form-label">الشعار الفرعي</label>
+                <input type="text" id="s_site_tagline" class="form-control" placeholder="الخبر الصادق والرأي الحر">
+              </div>
+              <div class="form-group span-2">
+                <label class="form-label">وصف الموقع (يظهر في جوجل)</label>
+                <textarea id="s_site_description" class="form-control" rows="2" placeholder="وصف مختصر للموقع..."></textarea>
+              </div>
+              <div class="form-group span-2">
+                <label class="form-label">الكلمات المفتاحية</label>
+                <input type="text" id="s_site_keywords" class="form-control" placeholder="أخبار السودان، فضل محمد خير، ...">
+                <span class="form-hint">افصل بين الكلمات بفاصلة</span>
+              </div>
+              <div class="form-group">
+                <label class="form-label">البريد الإلكتروني للتواصل</label>
+                <input type="email" id="s_contact_email" class="form-control" placeholder="info@example.com">
+              </div>
+              <div class="form-group">
+                <label class="form-label">رابط الشعار (Logo URL)</label>
+                <input type="text" id="s_logo_url" class="form-control" placeholder="/uploads/logo.png">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Social Tab -->
+      <div class="tab-content" id="tab-social">
+        <div class="card" style="margin-bottom:1.25rem;">
+          <div class="card-header"><span class="card-title-sm"><i data-feather="share-2"></i> روابط منصات التواصل</span></div>
+          <div class="card-body">
+            <div class="form-grid form-grid-2" style="gap:1rem;">
+              <div class="form-group">
+                <label class="form-label"><i data-feather="facebook" style="display:inline;width:14px;height:14px;"></i> رابط صفحة فيسبوك</label>
+                <input type="url" id="s_facebook_url" class="form-control" placeholder="https://facebook.com/yourpage">
+              </div>
+              <div class="form-group">
+                <label class="form-label">رابط X / تويتر</label>
+                <input type="url" id="s_twitter_url" class="form-control" placeholder="https://twitter.com/yourhandle">
+              </div>
+              <div class="form-group">
+                <label class="form-label"><i data-feather="linkedin" style="display:inline;width:14px;height:14px;"></i> رابط لينكد إن</label>
+                <input type="url" id="s_linkedin_url" class="form-control" placeholder="https://linkedin.com/company/yourpage">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:1.25rem;">
+          <div class="card-header"><span class="card-title-sm"><i data-feather="zap"></i> النشر التلقائي عند نشر خبر جديد</span></div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:0.85rem;">
+            <div class="toggle-wrap">
+              <label class="toggle"><input type="checkbox" id="s_auto_post_facebook"><span class="toggle-slider"></span></label>
+              <span class="toggle-label">نشر تلقائي على فيسبوك</span>
+            </div>
+            <div class="toggle-wrap">
+              <label class="toggle"><input type="checkbox" id="s_auto_post_twitter"><span class="toggle-slider"></span></label>
+              <span class="toggle-label">نشر تلقائي على X / تويتر</span>
+            </div>
+            <div class="toggle-wrap">
+              <label class="toggle"><input type="checkbox" id="s_auto_post_linkedin"><span class="toggle-slider"></span></label>
+              <span class="toggle-label">نشر تلقائي على لينكد إن</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><span class="card-title-sm"><i data-feather="key"></i> مفاتيح API لمنصات التواصل</span></div>
+          <div class="card-body">
+            <p style="font-size:0.85rem;color:#607D8B;margin-bottom:1rem;background:#FFF8E1;padding:0.75rem;border-radius:8px;border-right:4px solid #D4A017;">
+              ⚠ هذه المفاتيح حساسة. يمكن أيضاً تعيينها في ملف <code>.env</code> للأمان الأفضل.
+            </p>
+            <div class="form-grid form-grid-2" style="gap:0.85rem;">
+              <div class="form-group span-2">
+                <label class="form-label">Facebook - رقم معرف الصفحة</label>
+                <input type="text" id="s_facebook_page_id" class="form-control" placeholder="1234567890">
+              </div>
+              <div class="form-group span-2">
+                <label class="form-label">Facebook - Page Access Token</label>
+                <input type="password" id="s_facebook_access_token" class="form-control" placeholder="EAABxx...">
+              </div>
+              <div class="form-group span-2">
+                <label class="form-label">LinkedIn - Organization ID</label>
+                <input type="text" id="s_linkedin_org_id" class="form-control" placeholder="12345678">
+              </div>
+              <div class="form-group span-2">
+                <label class="form-label">LinkedIn - Access Token</label>
+                <input type="password" id="s_linkedin_access_token" class="form-control" placeholder="AQV...">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Twitter - API Key</label>
+                <input type="text" id="s_twitter_api_key" class="form-control" placeholder="xxxx">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Twitter - API Secret</label>
+                <input type="password" id="s_twitter_api_secret" class="form-control" placeholder="xxxx">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Twitter - Access Token</label>
+                <input type="text" id="s_twitter_access_token" class="form-control" placeholder="xxxx">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Twitter - Access Token Secret</label>
+                <input type="password" id="s_twitter_access_secret" class="form-control" placeholder="xxxx">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SEO Tab -->
+      <div class="tab-content" id="tab-seo">
+        <div class="card">
+          <div class="card-header"><span class="card-title-sm"><i data-feather="search"></i> إعدادات SEO وجوجل</span></div>
+          <div class="card-body">
+            <div style="background:#E3F2FD;padding:1rem;border-radius:8px;margin-bottom:1.25rem;font-size:0.88rem;line-height:1.8;">
+              <strong>الأدوات المفعّلة تلقائياً لتصدر نتائج البحث:</strong><br>
+              ✅ ملف <code>robots.txt</code> يسمح لجوجل بالفهرسة<br>
+              ✅ خريطة موقع <code>sitemap.xml</code> تُحدَّث تلقائياً<br>
+              ✅ خريطة <code>news-sitemap.xml</code> لأخبار جوجل Google News<br>
+              ✅ بيانات منظمة JSON-LD لكل خبر (NewsArticle Schema)<br>
+              ✅ وسوم Open Graph و Twitter Cards لمشاركة جيدة<br>
+              ✅ توجيهات canonical لتجنب تكرار المحتوى
+            </div>
+            <h4 style="font-size:0.95rem;font-weight:700;margin-bottom:0.75rem;color:#1565C0;">خطوات تسجيل الموقع في جوجل:</h4>
+            <ol style="font-size:0.88rem;line-height:2;color:#455A64;padding-right:1.25rem;">
+              <li>اذهب إلى <a href="https://search.google.com/search-console" target="_blank" style="color:#1565C0;">Google Search Console</a></li>
+              <li>أضف موقعك وتحقق من ملكيته</li>
+              <li>أرسل خريطة الموقع: <code>https://yourdomain.com/sitemap.xml</code></li>
+              <li>أرسل خريطة الأخبار: <code>https://yourdomain.com/news-sitemap.xml</code></li>
+              <li>قدّم للانضمام لـ <a href="https://news.google.com/press" target="_blank" style="color:#1565C0;">Google News Publisher Center</a></li>
+            </ol>
+            <div class="form-group" style="margin-top:1.25rem;">
+              <label class="form-label">مفتاح IndexNow (للفهرسة الفورية)</label>
+              <input type="text" id="s_indexnow_key" class="form-control" placeholder="your-indexnow-key">
+              <span class="form-hint">احصل على مفتاح من <a href="https://www.indexnow.org" target="_blank">indexnow.org</a> لإبلاغ جوجل وبينج فوراً عند نشر أخبار جديدة</span>
+            </div>
+            <div style="margin-top:1rem;display:flex;gap:0.75rem;flex-wrap:wrap;">
+              <a href="/sitemap.xml" target="_blank" class="btn btn-outline btn-sm"><i data-feather="external-link"></i> sitemap.xml</a>
+              <a href="/news-sitemap.xml" target="_blank" class="btn btn-outline btn-sm"><i data-feather="external-link"></i> news-sitemap.xml</a>
+              <a href="/robots.txt" target="_blank" class="btn btn-outline btn-sm"><i data-feather="external-link"></i> robots.txt</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Password Tab -->
+      <div class="tab-content" id="tab-password">
+        <div class="card" style="max-width:450px;">
+          <div class="card-header"><span class="card-title-sm"><i data-feather="lock"></i> تغيير كلمة المرور</span></div>
+          <div class="card-body">
+            <div class="form-grid" style="gap:0.85rem;">
+              <div class="form-group">
+                <label class="form-label">كلمة المرور الحالية</label>
+                <input type="password" id="currentPass" class="form-control" placeholder="••••••••">
+              </div>
+              <div class="form-group">
+                <label class="form-label">كلمة المرور الجديدة (8 أحرف على الأقل)</label>
+                <input type="password" id="newPass" class="form-control" placeholder="••••••••" minlength="8">
+              </div>
+              <div class="form-group">
+                <label class="form-label">تأكيد كلمة المرور الجديدة</label>
+                <input type="password" id="confirmPass" class="form-control" placeholder="••••••••">
+              </div>
+            </div>
+            <button class="btn btn-primary" style="margin-top:1rem;" onclick="changePassword()">
+              <i data-feather="shield"></i> تغيير كلمة المرور
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+feather.replace();
+
+async function init() {
+  const resp = await fetch('/api/auth/me');
+  if (!resp.ok) { window.location.href = '/admin/login.html'; return; }
+  const { user } = await resp.json();
+  if (user.role !== 'admin') { showToast('صلاحيات المدير مطلوبة', 'error'); return; }
+  document.getElementById('userAvatar').textContent = user.username[0].toUpperCase();
+  document.getElementById('userName').textContent = user.username;
+  document.getElementById('userRole').textContent = 'مدير';
+  await loadSettings();
+}
+
+async function loadSettings() {
+  const resp = await fetch('/api/users/settings/all');
+  const { settings } = await resp.json();
+  const fields = ['site_name','site_tagline','site_description','site_keywords','contact_email','logo_url',
+    'facebook_url','twitter_url','linkedin_url','facebook_page_id','facebook_access_token',
+    'linkedin_org_id','linkedin_access_token','twitter_api_key','twitter_api_secret',
+    'twitter_access_token','twitter_access_secret'];
+  fields.forEach(k => {
+    const el = document.getElementById('s_' + k);
+    if (el) el.value = settings[k] || '';
+  });
+  document.getElementById('s_auto_post_facebook').checked = settings.auto_post_facebook === '1';
+  document.getElementById('s_auto_post_twitter').checked = settings.auto_post_twitter === '1';
+  document.getElementById('s_auto_post_linkedin').checked = settings.auto_post_linkedin === '1';
+}
+
+async function saveSettings() {
+  const payload = {};
+  const fields = ['site_name','site_tagline','site_description','site_keywords','contact_email','logo_url',
+    'facebook_url','twitter_url','linkedin_url','facebook_page_id','facebook_access_token',
+    'linkedin_org_id','linkedin_access_token','twitter_api_key','twitter_api_secret',
+    'twitter_access_token','twitter_access_secret'];
+  fields.forEach(k => {
+    const el = document.getElementById('s_' + k);
+    if (el) payload[k] = el.value;
+  });
+  payload.auto_post_facebook = document.getElementById('s_auto_post_facebook').checked ? '1' : '0';
+  payload.auto_post_twitter = document.getElementById('s_auto_post_twitter').checked ? '1' : '0';
+  payload.auto_post_linkedin = document.getElementById('s_auto_post_linkedin').checked ? '1' : '0';
+
+  const resp = await fetch('/api/users/settings/all', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (resp.ok) showToast('تم حفظ الإعدادات بنجاح', 'success');
+  else showToast('خطأ في الحفظ', 'error');
+}
+
+async function changePassword() {
+  const current = document.getElementById('currentPass').value;
+  const newP = document.getElementById('newPass').value;
+  const confirm = document.getElementById('confirmPass').value;
+  if (newP !== confirm) { showToast('كلمتا المرور غير متطابقتين', 'error'); return; }
+  const resp = await fetch('/api/auth/change-password', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ currentPassword: current, newPassword: newP })
+  });
+  const data = await resp.json();
+  if (resp.ok) { showToast('تم تغيير كلمة المرور بنجاح', 'success'); document.getElementById('currentPass').value = document.getElementById('newPass').value = document.getElementById('confirmPass').value = ''; }
+  else showToast(data.error || 'خطأ', 'error');
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  event.target.closest('.settings-tab').classList.add('active');
+  feather.replace();
+}
+
+function toggleSidebar() { document.getElementById('adminSidebar').classList.toggle('open'); }
+async function logout() { await fetch('/api/auth/logout', { method: 'POST' }); window.location.href = '/admin/login.html'; }
+
+function showToast(msg, type = 'info') {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = `toast toast-${type}`;
+  t.innerHTML = `<span>${msg}</span><button class="toast-close" onclick="this.parentElement.remove()">×</button>`;
+  c.appendChild(t);
+  setTimeout(() => t.remove(), 4000);
+}
+
+init();
+</script>
+</body>
+</html>
