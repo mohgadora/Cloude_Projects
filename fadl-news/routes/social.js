@@ -116,59 +116,69 @@ async function postToAllSocial(article, baseUrl, settings) {
     if (!p.enabled) continue;
     try {
       const postId = await p.fn(article, baseUrl, settings);
-      db.prepare(
-        'INSERT INTO social_posts (article_id, platform, post_id, status) VALUES (?, ?, ?, ?)'
-      ).run(article.id, p.name, postId || null, 'success');
+      await db.execute(
+        'INSERT INTO social_posts (article_id, platform, post_id, status) VALUES (?, ?, ?, ?)',
+        [article.id, p.name, postId || null, 'success']
+      );
     } catch (e) {
-      db.prepare(
-        'INSERT INTO social_posts (article_id, platform, status, error_message) VALUES (?, ?, ?, ?)'
-      ).run(article.id, p.name, 'failed', e.message);
+      await db.execute(
+        'INSERT INTO social_posts (article_id, platform, status, error_message) VALUES (?, ?, ?, ?)',
+        [article.id, p.name, 'failed', e.message]
+      );
     }
   }
 }
 
 // Manual post endpoint
-router.post('/post/:articleId', requireAuth, async (req, res) => {
-  const db = getDb();
-  const article = db.prepare(`
-    SELECT a.*, u.username as author_name, c.name as category_name
-    FROM articles a LEFT JOIN users u ON a.author_id = u.id LEFT JOIN categories c ON a.category_id = c.id
-    WHERE a.id = ?
-  `).get(req.params.articleId);
-  if (!article) return res.status(404).json({ error: 'المقال غير موجود' });
+router.post('/post/:articleId', requireAuth, async (req, res, next) => {
+  try {
+    const db = getDb();
+    const article = await db.queryOne(`
+      SELECT a.*, u.username as author_name, c.name as category_name
+      FROM articles a LEFT JOIN users u ON a.author_id = u.id LEFT JOIN categories c ON a.category_id = c.id
+      WHERE a.id = ?
+    `, [req.params.articleId]);
+    if (!article) return res.status(404).json({ error: 'المقال غير موجود' });
 
-  const settings = {};
-  db.prepare('SELECT key, value FROM settings').all().forEach(r => { settings[r.key] = r.value; });
-  const baseUrl = process.env.BASE_URL || `http://${req.get('host')}`;
-  const { platforms } = req.body;
-  const results = {};
+    const settings = {};
+    const rows = await db.query('SELECT `key`, value FROM settings');
+    rows.forEach(r => { settings[r.key] = r.value; });
+    const baseUrl = process.env.BASE_URL || `http://${req.get('host')}`;
+    const { platforms } = req.body;
+    const results = {};
 
-  const fns = { facebook: postToFacebook, linkedin: postToLinkedIn, twitter: postToTwitter };
-  for (const p of (platforms || ['facebook', 'linkedin', 'twitter'])) {
-    if (!fns[p]) continue;
-    try {
-      const postId = await fns[p](article, baseUrl, settings);
-      db.prepare(
-        'INSERT INTO social_posts (article_id, platform, post_id, status) VALUES (?, ?, ?, ?)'
-      ).run(article.id, p, postId || null, 'success');
-      results[p] = { success: true };
-    } catch (e) {
-      db.prepare(
-        'INSERT INTO social_posts (article_id, platform, status, error_message) VALUES (?, ?, ?, ?)'
-      ).run(article.id, p, 'failed', e.message);
-      results[p] = { success: false, error: e.message };
+    const fns = { facebook: postToFacebook, linkedin: postToLinkedIn, twitter: postToTwitter };
+    for (const p of (platforms || ['facebook', 'linkedin', 'twitter'])) {
+      if (!fns[p]) continue;
+      try {
+        const postId = await fns[p](article, baseUrl, settings);
+        await db.execute(
+          'INSERT INTO social_posts (article_id, platform, post_id, status) VALUES (?, ?, ?, ?)',
+          [article.id, p, postId || null, 'success']
+        );
+        results[p] = { success: true };
+      } catch (e) {
+        await db.execute(
+          'INSERT INTO social_posts (article_id, platform, status, error_message) VALUES (?, ?, ?, ?)',
+          [article.id, p, 'failed', e.message]
+        );
+        results[p] = { success: false, error: e.message };
+      }
     }
-  }
-  res.json({ results });
+    res.json({ results });
+  } catch (err) { next(err); }
 });
 
 // GET social post history
-router.get('/history/:articleId', requireAuth, (req, res) => {
-  const db = getDb();
-  const posts = db.prepare(
-    'SELECT * FROM social_posts WHERE article_id = ? ORDER BY created_at DESC'
-  ).all(req.params.articleId);
-  res.json({ posts });
+router.get('/history/:articleId', requireAuth, async (req, res, next) => {
+  try {
+    const db = getDb();
+    const posts = await db.query(
+      'SELECT * FROM social_posts WHERE article_id = ? ORDER BY created_at DESC',
+      [req.params.articleId]
+    );
+    res.json({ posts });
+  } catch (err) { next(err); }
 });
 
 module.exports = router;

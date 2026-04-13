@@ -1,8 +1,5 @@
 node_modules/
 .env
-database/news.db
-database/news.db-wal
-database/news.db-shm
 public/uploads/*
 !public/uploads/.gitkeep
 *.log

@@ -1,111 +1,190 @@
-const Database = require('better-sqlite3');
+const mysql = require('mysql2/promise');
 const bcrypt = require('bcryptjs');
-const path = require('path');
 
-const DB_PATH = path.join(__dirname, 'news.db');
+let pool;
 
-let db;
-
-function getDb() {
-  if (!db) {
-    db = new Database(DB_PATH);
-    db.pragma('journal_mode = WAL');
-    db.pragma('foreign_keys = ON');
+function getPool() {
+  if (!pool) {
+    pool = mysql.createPool({
+      host: process.env.DB_HOST || 'localhost',
+      port: parseInt(process.env.DB_PORT) || 3306,
+      user: process.env.DB_USER || 'root',
+      password: process.env.DB_PASSWORD || '',
+      database: process.env.DB_NAME || 'fadl_news',
+      waitForConnections: true,
+      connectionLimit: parseInt(process.env.DB_CONNECTION_LIMIT) || 10,
+      queueLimit: 0,
+      charset: 'utf8mb4',
+      dateStrings: true,
+      multipleStatements: false,
+    });
   }
-  return db;
+  return pool;
 }
 
-function initDb() {
-  const database = getDb();
+// Run a SELECT query and return all rows
+async function query(sql, params = []) {
+  const [rows] = await getPool().query(sql, params);
+  return rows;
+}
 
-  database.exec(`
-    CREATE TABLE IF NOT EXISTS users (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      username TEXT UNIQUE NOT NULL,
-      email TEXT UNIQUE NOT NULL,
-      password TEXT NOT NULL,
-      role TEXT DEFAULT 'editor',
-      avatar TEXT,
-      is_active INTEGER DEFAULT 1,
-      created_at TEXT DEFAULT (datetime('now')),
-      last_login TEXT
+// Run a SELECT query and return only the first row (or null)
+async function queryOne(sql, params = []) {
+  const [rows] = await getPool().query(sql, params);
+  return rows[0] || null;
+}
+
+// Run an INSERT/UPDATE/DELETE query; returns { insertId, affectedRows }
+async function execute(sql, params = []) {
+  const [result] = await getPool().query(sql, params);
+  return result;
+}
+
+// Execute a function inside a transaction. `fn` receives a connection wrapper
+// with query / queryOne / execute helpers.
+async function transaction(fn) {
+  const conn = await getPool().getConnection();
+  try {
+    await conn.beginTransaction();
+    const wrapper = {
+      query: async (sql, params = []) => {
+        const [rows] = await conn.query(sql, params);
+        return rows;
+      },
+      queryOne: async (sql, params = []) => {
+        const [rows] = await conn.query(sql, params);
+        return rows[0] || null;
+      },
+      execute: async (sql, params = []) => {
+        const [result] = await conn.query(sql, params);
+        return result;
+      },
+    };
+    const result = await fn(wrapper);
+    await conn.commit();
+    return result;
+  } catch (err) {
+    try { await conn.rollback(); } catch {}
+    throw err;
+  } finally {
+    conn.release();
+  }
+}
+
+// Exposed "db" object used throughout the application
+function getDb() {
+  return { query, queryOne, execute, transaction };
+}
+
+// Ensure the target database exists before creating the pool that is bound to it.
+async function ensureDatabaseExists() {
+  const dbName = process.env.DB_NAME || 'fadl_news';
+  const admin = await mysql.createConnection({
+    host: process.env.DB_HOST || 'localhost',
+    port: parseInt(process.env.DB_PORT) || 3306,
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || '',
+  });
+  try {
+    await admin.query(
+      `CREATE DATABASE IF NOT EXISTS \`${dbName}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`
     );
+  } finally {
+    await admin.end();
+  }
+}
 
-    CREATE TABLE IF NOT EXISTS categories (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      slug TEXT UNIQUE NOT NULL,
-      description TEXT,
-      color TEXT DEFAULT '#1565C0',
-      icon TEXT DEFAULT 'newspaper',
-      sort_order INTEGER DEFAULT 0,
-      created_at TEXT DEFAULT (datetime('now'))
-    );
+async function initDb() {
+  await ensureDatabaseExists();
 
-    CREATE TABLE IF NOT EXISTS articles (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      title TEXT NOT NULL,
-      slug TEXT UNIQUE NOT NULL,
-      content TEXT NOT NULL,
-      excerpt TEXT,
-      image_url TEXT,
-      image_caption TEXT,
-      category_id INTEGER,
-      tags TEXT DEFAULT '[]',
-      author_id INTEGER NOT NULL,
-      status TEXT DEFAULT 'published',
-      featured INTEGER DEFAULT 0,
-      breaking INTEGER DEFAULT 0,
-      views INTEGER DEFAULT 0,
-      seo_title TEXT,
-      seo_description TEXT,
-      created_at TEXT DEFAULT (datetime('now')),
-      updated_at TEXT DEFAULT (datetime('now')),
-      published_at TEXT DEFAULT (datetime('now')),
-      FOREIGN KEY (category_id) REFERENCES categories(id),
-      FOREIGN KEY (author_id) REFERENCES users(id)
-    );
+  const ddl = [
+    `CREATE TABLE IF NOT EXISTS users (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      username VARCHAR(100) UNIQUE NOT NULL,
+      email VARCHAR(190) UNIQUE NOT NULL,
+      password VARCHAR(255) NOT NULL,
+      role VARCHAR(20) DEFAULT 'editor',
+      avatar VARCHAR(500) NULL,
+      is_active TINYINT(1) DEFAULT 1,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      last_login DATETIME NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
 
-    CREATE TABLE IF NOT EXISTS social_posts (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      article_id INTEGER NOT NULL,
-      platform TEXT NOT NULL,
-      post_id TEXT,
-      status TEXT DEFAULT 'pending',
-      error_message TEXT,
-      created_at TEXT DEFAULT (datetime('now')),
-      FOREIGN KEY (article_id) REFERENCES articles(id)
-    );
+    `CREATE TABLE IF NOT EXISTS categories (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      name VARCHAR(150) NOT NULL,
+      slug VARCHAR(150) UNIQUE NOT NULL,
+      description TEXT NULL,
+      color VARCHAR(20) DEFAULT '#1565C0',
+      icon VARCHAR(50) DEFAULT 'newspaper',
+      sort_order INT DEFAULT 0,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
 
-    CREATE TABLE IF NOT EXISTS settings (
-      key TEXT PRIMARY KEY,
-      value TEXT,
-      updated_at TEXT DEFAULT (datetime('now'))
-    );
+    `CREATE TABLE IF NOT EXISTS articles (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      title VARCHAR(500) NOT NULL,
+      slug VARCHAR(255) UNIQUE NOT NULL,
+      content MEDIUMTEXT NOT NULL,
+      excerpt TEXT NULL,
+      image_url VARCHAR(500) NULL,
+      image_caption VARCHAR(500) NULL,
+      category_id INT NULL,
+      tags TEXT NULL,
+      author_id INT NOT NULL,
+      status VARCHAR(20) DEFAULT 'published',
+      featured TINYINT(1) DEFAULT 0,
+      breaking TINYINT(1) DEFAULT 0,
+      views INT DEFAULT 0,
+      seo_title VARCHAR(500) NULL,
+      seo_description TEXT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      published_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      INDEX idx_articles_status (status),
+      INDEX idx_articles_category (category_id),
+      INDEX idx_articles_slug (slug),
+      INDEX idx_articles_featured (featured),
+      INDEX idx_articles_created (created_at),
+      CONSTRAINT fk_articles_category FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL,
+      CONSTRAINT fk_articles_author FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE RESTRICT
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
 
-    CREATE TABLE IF NOT EXISTS newsletters (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      title TEXT NOT NULL,
-      articles_ids TEXT DEFAULT '[]',
-      template TEXT DEFAULT 'classic',
-      created_by INTEGER,
-      created_at TEXT DEFAULT (datetime('now')),
-      FOREIGN KEY (created_by) REFERENCES users(id)
-    );
+    `CREATE TABLE IF NOT EXISTS social_posts (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      article_id INT NOT NULL,
+      platform VARCHAR(50) NOT NULL,
+      post_id VARCHAR(255) NULL,
+      status VARCHAR(20) DEFAULT 'pending',
+      error_message TEXT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT fk_social_article FOREIGN KEY (article_id) REFERENCES articles(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
 
-    CREATE INDEX IF NOT EXISTS idx_articles_status ON articles(status);
-    CREATE INDEX IF NOT EXISTS idx_articles_category ON articles(category_id);
-    CREATE INDEX IF NOT EXISTS idx_articles_slug ON articles(slug);
-    CREATE INDEX IF NOT EXISTS idx_articles_featured ON articles(featured);
-    CREATE INDEX IF NOT EXISTS idx_articles_created ON articles(created_at);
-  `);
+    `CREATE TABLE IF NOT EXISTS settings (
+      \`key\` VARCHAR(100) PRIMARY KEY,
+      value TEXT NULL,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+
+    `CREATE TABLE IF NOT EXISTS newsletters (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      title VARCHAR(500) NOT NULL,
+      articles_ids TEXT NULL,
+      template VARCHAR(50) DEFAULT 'classic',
+      created_by INT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT fk_newsletters_user FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+  ];
+
+  for (const sql of ddl) {
+    await execute(sql);
+  }
 
   // Insert default categories
-  const catCount = database.prepare('SELECT COUNT(*) as c FROM categories').get();
-  if (catCount.c === 0) {
-    const insertCat = database.prepare(
-      'INSERT INTO categories (name, slug, description, color, icon) VALUES (?, ?, ?, ?, ?)'
-    );
+  const catRow = await queryOne('SELECT COUNT(*) AS c FROM categories');
+  if (catRow.c === 0) {
     const cats = [
       ['أخبار محلية', 'local', 'أخبار السودان والشأن الداخلي', '#1565C0', 'home'],
       ['أخبار دولية', 'international', 'أخبار العالم والأحداث الدولية', '#2E7D32', 'globe'],
@@ -116,13 +195,17 @@ function initDb() {
       ['صحة', 'health', 'أخبار الصحة والطب', '#1B5E20', 'heart'],
       ['رأي', 'opinion', 'مقالات الرأي والتحليل', '#4E342E', 'edit-3'],
     ];
-    cats.forEach(c => insertCat.run(...c));
+    for (const c of cats) {
+      await execute(
+        'INSERT INTO categories (name, slug, description, color, icon) VALUES (?, ?, ?, ?, ?)',
+        c
+      );
+    }
   }
 
   // Insert default settings
-  const setCount = database.prepare('SELECT COUNT(*) as c FROM settings').get();
-  if (setCount.c === 0) {
-    const insertSet = database.prepare('INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)');
+  const setRow = await queryOne('SELECT COUNT(*) AS c FROM settings');
+  if (setRow.c === 0) {
     const defaults = [
       ['site_name', 'مدونة فضل محمد خير'],
       ['site_tagline', 'الخبر الصادق والرأي الحر'],
@@ -137,26 +220,31 @@ function initDb() {
       ['auto_post_twitter', '0'],
       ['auto_post_linkedin', '0'],
     ];
-    defaults.forEach(([k, v]) => insertSet.run(k, v));
+    for (const [k, v] of defaults) {
+      await execute(
+        'INSERT IGNORE INTO settings (`key`, value) VALUES (?, ?)',
+        [k, v]
+      );
+    }
   }
 
   // Insert default admin user
-  const userCount = database.prepare('SELECT COUNT(*) as c FROM users').get();
-  if (userCount.c === 0) {
+  const userRow = await queryOne('SELECT COUNT(*) AS c FROM users');
+  if (userRow.c === 0) {
     const adminPass = bcrypt.hashSync(process.env.ADMIN_PASSWORD || 'Admin@123456', 12);
-    database.prepare(
-      'INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)'
-    ).run(
-      process.env.ADMIN_USERNAME || 'admin',
-      process.env.ADMIN_EMAIL || 'admin@fadlnews.com',
-      adminPass,
-      'admin'
+    await execute(
+      'INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)',
+      [
+        process.env.ADMIN_USERNAME || 'admin',
+        process.env.ADMIN_EMAIL || 'admin@fadlnews.com',
+        adminPass,
+        'admin',
+      ]
     );
     console.log('✓ Default admin user created');
   }
 
-  console.log('✓ Database initialized');
-  return database;
+  console.log('✓ MySQL database initialized');
 }
 
-module.exports = { getDb, initDb };
+module.exports = { getDb, getPool, initDb, query, queryOne, execute, transaction };
