@@ -3,6 +3,10 @@ from datetime import datetime, timedelta, timezone
 from apscheduler.schedulers.background import BackgroundScheduler
 from fastapi import Depends, FastAPI, HTTPException, Response, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from fastapi.requests import Request
+from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
 
 from auth import (
@@ -41,6 +45,9 @@ from services.session import purge_expired_sessions
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="ميزان - نظام الذكاء الاصطناعي القانوني", version="1.0.0")
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
+jinja = Jinja2Templates(directory="templates")
 
 app.add_middleware(
     CORSMiddleware,
@@ -335,6 +342,18 @@ async def chat_endpoint(
         db.commit()
 
     return ChatResponse(answer=result["answer"], session_id=result["session_id"])
+
+
+# ── UI Pages ──────────────────────────────────────────────────────────────────
+
+@app.get("/", response_class=HTMLResponse)
+def page_login(request: Request):
+    return jinja.TemplateResponse("login.html", {"request": request})
+
+
+@app.get("/dashboard", response_class=HTMLResponse)
+def page_dashboard(request: Request):
+    return jinja.TemplateResponse("dashboard.html", {"request": request})
 
 
 # ── Health ────────────────────────────────────────────────────────────────────
