@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ميزان — منصة الذكاء القانوني</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  :root{
+    --bg:#050816;--bg2:#07101f;--bg3:#0b1224;--card:#111827;--card2:#152033;--card3:#1b2740;
+    --border:#25324a;--text:#e5e7eb;--text2:#94a3b8;
+    --blue:#2563eb;--purple:#7c3aed;--green:#10b981;--gold:#f59e0b;--red:#ef4444;
+  }
+  body.light{
+    --bg:#F4F6FB;--bg2:#EDF1F8;--bg3:#FFFFFF;--card:#FFFFFF;--card2:#F7F9FC;--card3:#EEF2F8;
+    --border:#DCE3EE;--text:#16233A;--text2:#5C6B82;--green:#0E9F6E;--gold:#D9870B;
+  }
+  html{scroll-behavior:smooth;}
+  body{font-family:'Cairo',system-ui,sans-serif;background:linear-gradient(160deg,var(--bg),var(--bg2) 50%,var(--bg3));color:var(--text);min-height:100vh;line-height:1.75;font-size:15px;-webkit-font-smoothing:antialiased;transition:background .4s,color .3s;}
+  ::-webkit-scrollbar{width:7px;height:7px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+  ::placeholder{color:var(--text2);opacity:.7;}
+  input,textarea,button,select{font-family:inherit;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+  .fade{animation:fadeUp .4s ease;}
+  .lift{transition:transform .2s,box-shadow .2s,border-color .2s;}.lift:hover{transform:translateY(-2px);}
+  .spinner{width:17px;height:17px;border:2.5px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;}
+  .hidden{display:none!important;}
+  .auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;position:relative;overflow:hidden;}
+  .auth-wrap::before{content:'';position:absolute;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(124,58,237,.18),transparent 70%);top:-150px;right:-100px;}
+  .auth-wrap::after{content:'';position:absolute;width:420px;height:420px;border-radius:50%;background:radial-gradient(circle,rgba(37,99,235,.16),transparent 70%);bottom:-120px;left:-80px;}
+  .auth-card{background:var(--card);border:1px solid var(--border);border-radius:24px;padding:42px;width:100%;max-width:440px;position:relative;z-index:1;box-shadow:0 24px 60px rgba(0,0,0,.4);}
+  .glyph{width:62px;height:62px;border-radius:17px;background:linear-gradient(135deg,var(--blue),var(--purple));display:inline-flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(124,58,237,.4);margin-bottom:14px;}
+  .auth-name{font-size:30px;font-weight:800;line-height:1;}
+  .auth-tag{font-size:12px;color:var(--gold);letter-spacing:.12em;margin-top:6px;font-weight:600;}
+  .auth-title{font-size:21px;font-weight:800;text-align:center;margin-bottom:6px;}
+  .auth-sub{font-size:14px;color:var(--text2);text-align:center;margin-bottom:26px;}
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:13px;font-weight:600;margin-bottom:8px;}
+  input,textarea,select{width:100%;background:var(--card2);border:1.5px solid var(--border);border-radius:11px;padding:13px 15px;color:var(--text);font-size:14.5px;outline:none;transition:border-color .18s,box-shadow .18s;}
+  input:focus,textarea:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.15);}
+  textarea{resize:vertical;line-height:1.8;}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;padding:13px 26px;border-radius:11px;font-size:15px;font-weight:700;cursor:pointer;border:none;transition:transform .18s,opacity .18s;}
+  .btn-primary{background:linear-gradient(135deg,var(--blue),var(--purple));color:#fff;box-shadow:0 4px 16px rgba(37,99,235,.3);}
+  .btn-primary:hover{transform:translateY(-2px);}.btn-primary:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+  .btn-gold{background:var(--gold);color:#fff;}.btn-green{background:var(--green);color:#fff;}.btn-purple{background:linear-gradient(135deg,var(--purple),var(--blue));color:#fff;}
+  .btn-full{width:100%;}
+  .auth-switch{text-align:center;margin-top:20px;font-size:14px;color:var(--text2);}
+  .auth-switch a{color:var(--gold);font-weight:700;cursor:pointer;}
+  .err{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:11px;padding:12px 15px;color:var(--red);font-size:13.5px;margin-bottom:16px;display:none;}
+  .err.show{display:block;}
+  .seg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;}
+  .seg button{padding:12px;border-radius:11px;border:1.5px solid var(--border);background:var(--card2);color:var(--text);font-weight:600;cursor:pointer;font-size:13.5px;}
+  .seg button.on{border-color:var(--blue);background:rgba(37,99,235,.1);color:var(--blue);}
+  .alert-bar{padding:8px 24px;font-size:13px;display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;border-bottom:1px solid var(--border);}
+  .mini-btn{border:none;border-radius:8px;padding:5px 14px;font-size:12.5px;font-weight:700;cursor:pointer;}
+  .mini-ghost{background:transparent;border:1px solid var(--border);color:var(--text2);border-radius:8px;padding:5px 12px;font-size:12px;cursor:pointer;}
+  .top-header{max-width:1180px;margin:0 auto;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;}
+  .icon-btn{width:38px;height:38px;border-radius:10px;background:var(--card);border:1px solid var(--border);color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer;}
+  .icon-btn:hover{border-color:var(--blue);}
+  .avatar{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--blue),var(--purple));display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;}
+  main{max-width:1180px;margin:0 auto;padding:20px 24px 60px;}
+  .big-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:30px;cursor:pointer;position:relative;overflow:hidden;height:100%;display:flex;flex-direction:column;}
+  .big-card .topline{position:absolute;top:0;left:0;right:0;height:2px;opacity:.5;transition:opacity .2s;}.big-card:hover .topline{opacity:1;}
+  .big-card .cic{width:54px;height:54px;border-radius:15px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;}
+  .big-card h3{font-size:21px;font-weight:800;margin-bottom:10px;}
+  .big-card p{color:var(--text2);font-size:14px;line-height:1.85;flex:1;}
+  .big-card .cta{display:flex;align-items:center;gap:7px;margin-top:18px;font-weight:700;font-size:14px;}
+  .page-header{background:linear-gradient(135deg,var(--card),var(--card3));border:1px solid var(--border);border-radius:18px;padding:24px;position:relative;overflow:hidden;}
+  .page-header .topline{position:absolute;top:0;left:0;right:0;height:2px;}
+  .ph-row{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+  .ph-title{font-size:24px;font-weight:800;display:flex;align-items:center;gap:8px;}
+  .ph-desc{color:var(--text2);font-size:13.5px;margin-top:4px;}
+  .hbtn{background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:9px 16px;font-size:13.5px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
+  .dot-green{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;}
+  .panel{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;height:fit-content;}
+  .panel-title{font-size:15px;font-weight:700;}.panel-sub{font-size:12px;color:var(--text2);margin:2px 0 14px;}
+  .empty{text-align:center;padding:40px 16px;}.empty .eic{margin:0 auto 16px;border-radius:18px;display:flex;align-items:center;justify-content:center;}
+  .chat-box{background:var(--card);border:1px solid var(--border);border-radius:16px;display:flex;flex-direction:column;min-height:560px;}
+  .suggest{text-align:right;background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:13px 16px;color:var(--text);font-size:13.5px;cursor:pointer;line-height:1.7;width:100%;}
+  .bubble-user{background:linear-gradient(135deg,var(--blue),var(--purple));color:#fff;padding:13px 18px;border-radius:16px 16px 4px 16px;max-width:80%;font-size:14px;line-height:1.8;}
+  .bubble-ai{background:var(--card2);border:1px solid var(--border);border-radius:16px 16px 16px 4px;padding:22px;max-width:92%;width:100%;}
+  .tag-huk{font-size:11px;background:rgba(16,185,129,.12);color:var(--green);border:1px solid rgba(16,185,129,.3);padding:3px 10px;border-radius:20px;}
+  .src-card{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:12px;cursor:pointer;}
+  .src-tab{flex:1;padding:6px 4px;border-radius:8px;font-size:11.5px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text2);}
+  .src-tab.on{border-color:var(--blue);background:rgba(37,99,235,.1);color:var(--blue);}
+  .step-num{width:32px;height:32px;border-radius:50%;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;background:var(--card);color:var(--text2);border:1px solid var(--border);}
+  .step-num.on{background:var(--purple);color:#fff;border-color:var(--purple);box-shadow:0 0 14px rgba(124,58,237,.4);}
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px;}
+  .modal{background:var(--card);border:1px solid var(--border);border-radius:20px;width:100%;max-width:500px;padding:28px;position:relative;overflow:hidden;}
+  .dash-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:18px;}
+  .pill-status{font-size:12px;padding:5px 14px;border-radius:20px;border:1px solid var(--border);color:var(--text2);background:var(--card);}
+  .plan-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:26px;}
+  .role-badge{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:700;}
+  table{width:100%;border-collapse:collapse;}
+  th,td{text-align:right;padding:12px;border-bottom:1px solid var(--border);font-size:13.5px;}
+  th{color:var(--text2);font-weight:600;font-size:12px;}
+  @media(max-width:880px){.dash-grid{grid-template-columns:1fr;}.dash-grid>div:first-child{grid-row:auto!important;}main{padding:16px;}.advisor-grid{grid-template-columns:1fr!important;}.auth-card{padding:30px 22px;}}
+
+  /* ════ SMART DOCS MODULE ════ */
+  .doc-modal-wide{max-width:640px!important;}
+  /* Step indicator */
+  .ai-steps{padding:8px 0 4px;}
+  .ai-step-row{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--border);font-size:13.5px;}
+  .ai-step-row:last-child{border-bottom:none;}
+  .ai-step-dot{width:26px;height:26px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;}
+  .ai-step-dot.done{background:rgba(16,185,129,.15);border:1.5px solid var(--green);color:var(--green);}
+  .ai-step-dot.active{background:rgba(37,99,235,.15);border:1.5px solid var(--blue);animation:pulse 1s infinite;}
+  .ai-step-dot.wait{background:var(--card2);border:1.5px solid var(--border);color:var(--text2);}
+  /* Doc meta banner */
+  .doc-meta-banner{background:linear-gradient(135deg,rgba(37,99,235,.07),rgba(124,58,237,.07));border:1px solid rgba(124,58,237,.22);border-radius:13px;padding:16px;margin-bottom:20px;}
+  .doc-type-pill{display:inline-flex;align-items:center;gap:6px;background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.3);border-radius:7px;padding:3px 11px;font-size:11.5px;color:#a78bfa;font-weight:700;margin-bottom:7px;}
+  .conf-bar{height:3px;background:var(--border);border-radius:2px;margin-top:5px;}
+  .conf-fill{height:100%;background:linear-gradient(90deg,var(--green),#0891b2);border-radius:2px;transition:width .6s ease;}
+  /* Dynamic form fields */
+  .dyn-field{margin-bottom:17px;}
+  .dyn-label{display:block;font-size:13px;font-weight:700;margin-bottom:7px;}
+  .dyn-label .req{color:var(--red);margin-right:3px;}
+  .dyn-label .auto-tag{font-size:11px;color:var(--green);font-weight:400;margin-right:8px;}
+  .dyn-input{width:100%;background:var(--card2);border:1.5px solid var(--border);border-radius:11px;padding:11px 14px;color:var(--text);font-size:14px;outline:none;transition:border-color .18s,box-shadow .18s;}
+  .dyn-input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.12);}
+  .dyn-input.prefilled{border-color:rgba(16,185,129,.4);background:rgba(16,185,129,.04);}
+  .dyn-hint{font-size:11.5px;color:var(--text2);margin-top:5px;}
+  .dyn-select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:left 12px center;padding-left:32px;}
+  /* Repeater */
+  .repeater-box{border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+  .rep-item{background:var(--card2);border-bottom:1px solid var(--border);padding:14px;}
+  .rep-item:last-child{border-bottom:none;}
+  .rep-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px;}
+  .rep-label{font-size:12px;font-weight:700;color:var(--purple);}
+  .rep-remove{width:26px;height:26px;border-radius:6px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:var(--red);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;}
+  .rep-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .rep-grid.single{grid-template-columns:1fr;}
+  .rep-add{display:flex;align-items:center;justify-content:center;gap:7px;background:var(--card3);border:1.5px dashed var(--border);border-radius:9px;padding:10px;color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;width:100%;margin-top:9px;transition:border-color .15s;}
+  .rep-add:hover{border-color:var(--purple);color:var(--text);}
+  /* Check/radio options */
+  .opt-group{display:flex;flex-wrap:wrap;gap:8px;}
+  .opt-item{display:flex;align-items:center;gap:6px;background:var(--card2);border:1.5px solid var(--border);border-radius:9px;padding:7px 12px;cursor:pointer;font-size:13px;transition:border-color .15s;user-select:none;}
+  .opt-item.on{border-color:var(--purple);background:rgba(124,58,237,.08);color:var(--purple);}
+  .opt-item input{accent-color:var(--purple);margin:0;}
+  /* Missing fields warning */
+  .missing-bar{background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.28);border-radius:11px;padding:12px 15px;font-size:13px;display:flex;gap:9px;margin-bottom:16px;align-items:flex-start;}
+  /* Disclaimer */
+  .legal-disclaimer{background:rgba(37,99,235,.06);border:1px solid rgba(37,99,235,.18);border-radius:10px;padding:11px 14px;font-size:12px;color:var(--text2);display:flex;gap:8px;margin-top:14px;}
+  /* Editor view */
+  .doc-editor-wrap{display:flex;flex-direction:column;gap:14px;}
+  .editor-bar{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px 16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .ebar-btn{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:7px 13px;color:var(--text);font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:border-color .15s;}
+  .ebar-btn:hover{border-color:var(--blue);}
+  .ebar-btn.primary{background:linear-gradient(135deg,var(--blue),var(--purple));border:none;color:#fff;}
+  .ebar-sep{width:1px;height:24px;background:var(--border);margin:0 3px;}
+  .save-dot{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;margin-left:4px;}
+  .doc-content-box{background:var(--card);border:1px solid var(--border);border-radius:14px;min-height:520px;}
+  .doc-editable{padding:40px 48px;min-height:520px;outline:none;font-size:14.5px;line-height:2.1;color:var(--text);white-space:pre-wrap;direction:rtl;text-align:right;}
+  .doc-editable:focus{outline:none;}
+  /* Inspect panel */
+  .inspect-wrap{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin-top:14px;}
+  .inspect-score{display:flex;align-items:center;gap:16px;background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px;}
+  .iscore-num{font-size:38px;font-weight:900;}
+  .iscore-verdict{font-size:14px;font-weight:700;margin-top:2px;}
+  .inspect-section{margin-bottom:14px;}
+  .inspect-slabel{font-size:11.5px;font-weight:700;color:var(--text2);letter-spacing:.07em;text-transform:uppercase;margin-bottom:8px;}
+  .inspect-item{border-radius:9px;padding:10px 13px;font-size:13px;line-height:1.75;margin-bottom:7px;}
+  .inspect-item.warn{background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.3);}
+  .inspect-item.danger{background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.3);}
+  .inspect-item.ok{background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.3);}
+  .ibadge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:5px;font-weight:700;margin-bottom:4px;}
+  .ibadge.warn{background:rgba(245,158,11,.15);color:var(--gold);}
+  .ibadge.danger{background:rgba(239,68,68,.15);color:var(--red);}
+  .ibadge.ok{background:rgba(16,185,129,.15);color:var(--green);}
+  /* Docs list card */
+  .doc-card{background:var(--card);border:1px solid var(--border);border-radius:15px;padding:20px;min-height:160px;cursor:pointer;transition:border-color .18s,transform .18s;}
+  .doc-card:hover{border-color:var(--green);transform:translateY(-2px);}
+  .doc-card-kind{font-size:11px;color:var(--text2);margin-top:6px;}
+  @media(max-width:880px){.rep-grid{grid-template-columns:1fr!important;}.doc-editable{padding:22px 18px;}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="auth-wrap" id="screen-login">
+  <div class="auth-card">
+    <div style="text-align:center;margin-bottom:24px;"><div class="glyph"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M3 7h18M6 7l-3 7h6l-3-7zM18 7l-3 7h6l-3-7z"/></svg></div><div class="auth-name">ميزان</div><div class="auth-tag">الذكاء القانوني</div></div>
+    <div class="auth-title">تسجيل الدخول</div><div class="auth-sub">أدخل بياناتك للوصول إلى حسابك</div>
+    <div class="err" id="login-err"></div>
+    <div class="field"><label>البريد الإلكتروني</label><input type="email" id="login-email" placeholder="example@email.com"></div>
+    <div class="field"><label>كلمة المرور</label><input type="password" id="login-pass" placeholder="••••••••"></div>
+    <button class="btn btn-primary btn-full" id="login-btn" onclick="doLogin()">تسجيل الدخول</button>
+    <div class="auth-switch">ليس لديك حساب؟ <a onclick="showScreen('register')">إنشاء حساب جديد</a></div>
+  </div>
+</div>
+
+<!-- REGISTER -->
+<div class="auth-wrap hidden" id="screen-register">
+  <div class="auth-card">
+    <div style="text-align:center;margin-bottom:24px;"><div class="glyph"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M3 7h18M6 7l-3 7h6l-3-7zM18 7l-3 7h6l-3-7z"/></svg></div><div class="auth-name">ميزان</div><div class="auth-tag">الذكاء القانوني</div></div>
+    <div class="auth-title">إنشاء حساب جديد</div><div class="auth-sub">ابدأ رحلتك مع مساعدك القانوني الذكي</div>
+    <div class="err" id="reg-err"></div>
+    <div class="seg"><button id="acct-ind" class="on" onclick="setAcct('individual')">حساب فردي</button><button id="acct-org" onclick="setAcct('org')">مؤسسة / مكتب</button></div>
+    <div class="field hidden" id="org-field"><label>اسم المؤسسة</label><input type="text" id="reg-org" placeholder="مكتب المحاماة"></div>
+    <div class="field"><label>الاسم الكامل</label><input type="text" id="reg-name" placeholder="محمد عبدالله"></div>
+    <div class="field"><label>البريد الإلكتروني</label><input type="email" id="reg-email" placeholder="example@email.com"></div>
+    <div class="field"><label>كلمة المرور</label><input type="password" id="reg-pass" placeholder="٦ أحرف على الأقل"></div>
+    <button class="btn btn-primary btn-full" id="reg-btn" onclick="doRegister()">إنشاء الحساب</button>
+    <div class="auth-switch">لديك حساب؟ <a onclick="showScreen('login')">تسجيل الدخول</a></div>
+  </div>
+</div>
+
+<!-- ONBOARDING -->
+<div class="auth-wrap hidden" id="screen-onboarding">
+  <div class="auth-card" style="max-width:640px;">
+    <div id="onb-dots" style="display:flex;justify-content:center;gap:8px;margin-bottom:26px;"><div class="onb-dot" data-i="0"></div><div class="onb-dot" data-i="1"></div></div>
+    <div id="onb-0">
+      <h1 style="font-size:24px;font-weight:800;text-align:center;margin-bottom:8px;">اختر مجالات ممارستك القانونية</h1>
+      <p style="color:var(--text2);text-align:center;margin-bottom:24px;font-size:14px;">مجالات الممارسة (اختر ما يناسبك)</p>
+      <div id="areas" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:28px;"></div>
+      <h3 style="font-size:16px;font-weight:700;margin-bottom:12px;">مستوى الخبرة</h3>
+      <div id="levels" style="display:grid;gap:8px;margin-bottom:28px;"></div>
+      <button class="btn btn-purple btn-full" onclick="onbToPhone()">التالي</button>
+    </div>
+    <div id="onb-1" class="hidden" style="text-align:center;">
+      <div style="width:80px;height:80px;border-radius:22px;background:rgba(245,158,11,.12);color:var(--gold);display:inline-flex;align-items:center;justify-content:center;margin-bottom:18px;"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/></svg></div>
+      <h1 style="font-size:23px;font-weight:800;margin-bottom:8px;">تأكيد رقم الهاتف</h1>
+      <p style="color:var(--text2);margin-bottom:22px;font-size:14px;">لحماية حسابك وضمان أمان بياناتك</p>
+      <div class="err" id="otp-err"></div>
+      <div id="otp-phone-box"><div class="field" style="text-align:right;"><label>رقم الهاتف</label><input type="tel" id="onb-phone" placeholder="+966XXXXXXXXX" style="direction:ltr;text-align:left;"></div><button class="btn btn-gold btn-full" id="otp-send-btn" onclick="sendOTP()">إرسال رمز التحقق</button></div>
+      <div id="otp-code-box" class="hidden"><p style="font-size:13px;color:var(--gold);margin-bottom:14px;" id="otp-hint"></p><div class="field"><input type="text" id="onb-code" placeholder="123456" maxlength="6" style="text-align:center;font-size:24px;letter-spacing:8px;direction:ltr;"></div><button class="btn btn-gold btn-full" id="verify-btn" onclick="verifyOTP()">تأكيد ودخول</button></div>
+      <div class="auth-switch"><a onclick="onbComplete()">تخطّي الآن</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="screen-app" class="hidden">
+  <div class="alert-bar" id="verify-bar" style="background:rgba(245,158,11,.08);">
+    <span>فعّل بريدك الإلكتروني لتأمين حسابك واستعادته عند الحاجة.</span>
+    <button class="mini-btn btn-gold">أرسل رمز التحقق</button>
+    <button class="mini-ghost" onclick="document.getElementById('verify-bar').remove()">لاحقاً</button>
+  </div>
+  <div class="alert-bar" id="trial-bar" style="background:rgba(37,99,235,.08);">
+    <span id="trial-text">أنت في فترة تجريبية مجانية، اشترك الآن للاستمرار بكامل المزايا.</span>
+    <button class="mini-btn btn-gold" onclick="nav('plans')">اشترك الآن</button>
+  </div>
+  <header class="top-header">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button class="icon-btn" onclick="doLogout()" title="خروج"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
+      <button class="icon-btn" onclick="toggleTheme()" id="theme-btn"></button>
+      <button class="icon-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></button>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px;">
+      <span class="role-badge" id="hdr-role"></span>
+      <button class="mini-btn btn-gold" style="padding:7px 16px;" onclick="nav('plans')">اشترك الآن</button>
+      <div style="text-align:left;"><div style="font-size:12px;color:var(--text2);">مرحباً،</div><div style="font-size:15px;font-weight:700;" id="hdr-name">—</div></div>
+      <div class="avatar" id="hdr-avatar">؟</div>
+    </div>
+  </header>
+  <main id="app-main"></main>
+</div>
+
+<script>
+const API='';
+let TOKEN=localStorage.getItem('mizan_token')||null, USER=null, acctType='individual';
+
+async function api(path,method='GET',body=null){
+  const h={'Content-Type':'application/json'};if(TOKEN)h['Authorization']='Bearer '+TOKEN;
+  const o={method,headers:h};if(body)o.body=JSON.stringify(body);
+  const r=await fetch(API+path,o);
+  if(r.status===401){doLogout();throw new Error('انتهت الجلسة');}
+  if(!r.ok){const t=await r.json().catch(()=>({detail:'خطأ في الخادم'}));throw new Error(t.detail||'خطأ');}
+  return r.json();
+}
+function showErr(id,m){const e=document.getElementById(id);e.textContent=m;e.classList.add('show');}
+function clearErr(id){document.getElementById(id).classList.remove('show');}
+function toAr(n){return String(n).replace(/[0-9]/g,d=>'٠١٢٣٤٥٦٧٨٩'[d]);}
+
+function applyThemeIcon(){
+  const dark=!document.body.classList.contains('light');
+  const b=document.getElementById('theme-btn');if(!b)return;
+  b.innerHTML=dark?'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>':'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+}
+function toggleTheme(){document.body.classList.toggle('light');localStorage.setItem('mizan_theme',document.body.classList.contains('light')?'light':'dark');applyThemeIcon();}
+if(localStorage.getItem('mizan_theme')==='light')document.body.classList.add('light');
+
+function showScreen(n){['login','register','onboarding','app'].forEach(s=>document.getElementById('screen-'+s).classList.add('hidden'));document.getElementById('screen-'+n).classList.remove('hidden');}
+function setAcct(t){acctType=t;document.getElementById('acct-ind').classList.toggle('on',t==='individual');document.getElementById('acct-org').classList.toggle('on',t==='org');document.getElementById('org-field').classList.toggle('hidden',t!=='org');}
+
+async function doLogin(){
+  clearErr('login-err');
+  const email=document.getElementById('login-email').value.trim(),pass=document.getElementById('login-pass').value;
+  if(!email||!pass){showErr('login-err','أدخل البريد وكلمة المرور');return;}
+  const b=document.getElementById('login-btn');b.disabled=true;b.innerHTML='<span class="spinner"></span>';
+  try{const d=await api('/api/auth/login','POST',{email,password:pass});TOKEN=d.token;localStorage.setItem('mizan_token',TOKEN);USER=d.user;USER.onboarded?enterApp():startOnboarding();}
+  catch(e){showErr('login-err',e.message);}finally{b.disabled=false;b.innerHTML='تسجيل الدخول';}
+}
+async function doRegister(){
+  clearErr('reg-err');
+  const name=document.getElementById('reg-name').value.trim(),email=document.getElementById('reg-email').value.trim(),pass=document.getElementById('reg-pass').value,org=document.getElementById('reg-org').value.trim();
+  if(!name||!email||!pass){showErr('reg-err','جميع الحقول مطلوبة');return;}
+  if(pass.length<6){showErr('reg-err','كلمة المرور ٦ أحرف على الأقل');return;}
+  if(acctType==='org'&&!org){showErr('reg-err','أدخل اسم المؤسسة');return;}
+  const b=document.getElementById('reg-btn');b.disabled=true;b.innerHTML='<span class="spinner"></span>';
+  try{const d=await api('/api/auth/register','POST',{name,email,password:pass,account_type:acctType,org_name:org});TOKEN=d.token;localStorage.setItem('mizan_token',TOKEN);USER=d.user;startOnboarding();}
+  catch(e){showErr('reg-err',e.message);}finally{b.disabled=false;b.innerHTML='إنشاء الحساب';}
+}
+function doLogout(){if(TOKEN)api('/api/auth/logout','POST').catch(()=>{});TOKEN=null;USER=null;localStorage.removeItem('mizan_token');showScreen('login');}
+
+const AREAS=['تجاري','مدني','جنائي','عمالي','عقاري','أحوال شخصية','إداري','ملكية فكرية'];
+const LEVELS=['طالب / متدرب','مبتدئ','متوسط الخبرة','خبير','استشاري متقدم'];
+let selAreas=[],selLevel='';
+function startOnboarding(){renderOnbAreas();renderOnbLevels();document.getElementById('onb-0').classList.remove('hidden');document.getElementById('onb-1').classList.add('hidden');setOnbDot(0);showScreen('onboarding');}
+function setOnbDot(i){document.querySelectorAll('.onb-dot').forEach(d=>{const on=+d.dataset.i===i;d.style.cssText=`width:${on?28:10}px;height:10px;border-radius:${on?6:50}px;background:${on?'var(--purple)':'var(--border)'};transition:all .3s;`;});}
+function renderOnbAreas(){document.getElementById('areas').innerHTML=AREAS.map(a=>{const on=selAreas.includes(a);return `<button onclick="toggleArea('${a}')" style="padding:14px;border-radius:12px;cursor:pointer;font-weight:600;font-size:14px;display:flex;align-items:center;justify-content:center;gap:6px;border:1px solid ${on?'var(--purple)':'var(--border)'};background:${on?'rgba(124,58,237,.12)':'var(--card2)'};color:${on?'var(--purple)':'var(--text)'};">${on?'✓ ':''}${a}</button>`;}).join('');}
+function renderOnbLevels(){document.getElementById('levels').innerHTML=LEVELS.map(l=>{const on=selLevel===l;return `<button onclick="setLevel('${l}')" style="padding:13px 16px;border-radius:12px;cursor:pointer;font-weight:600;font-size:14px;text-align:right;border:1px solid ${on?'var(--purple)':'var(--border)'};background:${on?'rgba(124,58,237,.12)':'var(--card2)'};color:${on?'var(--purple)':'var(--text)'};">${l}</button>`;}).join('');}
+function toggleArea(a){selAreas=selAreas.includes(a)?selAreas.filter(x=>x!==a):[...selAreas,a];renderOnbAreas();}
+function setLevel(l){selLevel=l;renderOnbLevels();}
+async function onbToPhone(){try{await api('/api/onboarding/profile','POST',{practice_areas:selAreas,experience:selLevel});}catch(e){}document.getElementById('onb-0').classList.add('hidden');document.getElementById('onb-1').classList.remove('hidden');setOnbDot(1);}
+async function sendOTP(){clearErr('otp-err');const phone=document.getElementById('onb-phone').value.trim();if(!phone){showErr('otp-err','أدخل رقم الهاتف');return;}const b=document.getElementById('otp-send-btn');b.disabled=true;b.innerHTML='<span class="spinner"></span>';try{const d=await api('/api/onboarding/send-otp','POST',{phone});document.getElementById('otp-hint').textContent=d.message||'';document.getElementById('otp-phone-box').classList.add('hidden');document.getElementById('otp-code-box').classList.remove('hidden');}catch(e){showErr('otp-err',e.message);}finally{b.disabled=false;b.innerHTML='إرسال رمز التحقق';}}
+async function verifyOTP(){clearErr('otp-err');const phone=document.getElementById('onb-phone').value.trim(),code=document.getElementById('onb-code').value.trim();if(!code){showErr('otp-err','أدخل رمز التحقق');return;}const b=document.getElementById('verify-btn');b.disabled=true;b.innerHTML='<span class="spinner"></span>';try{await api('/api/onboarding/verify-otp','POST',{phone,code});USER.onboarded=1;enterApp();}catch(e){showErr('otp-err',e.message);}finally{b.disabled=false;b.innerHTML='تأكيد ودخول';}}
+async function onbComplete(){try{await api('/api/onboarding/complete','POST',{});}catch(e){}USER.onboarded=1;enterApp();}
+
+const ROLE_AR={owner:'مالك',lawyer:'محامي',assistant:'مساعد'};
+const ROLE_COLOR={owner:'var(--gold)',lawyer:'var(--blue)',assistant:'var(--text2)'};
+function enterApp(){
+  showScreen('app');applyThemeIcon();
+  document.getElementById('hdr-name').textContent=USER.name||'مستخدم';
+  document.getElementById('hdr-avatar').textContent=(USER.name||'؟').charAt(0);
+  const rb=document.getElementById('hdr-role');rb.textContent=ROLE_AR[USER.role]||'';rb.style.background=ROLE_COLOR[USER.role]+'22';rb.style.color=ROLE_COLOR[USER.role];
+  document.getElementById('trial-text').textContent=`باقتك: ${USER.plan_name} — استخدمت ${toAr(USER.cases_used)} من ${toAr(USER.cases_limit)} استشارة`;
+  _navStack=[];_currentPage='dash';
+  history.replaceState({page:'dash'},'',' ');
+  window.addEventListener('popstate',function(e){
+    if(e.state&&e.state.page){_currentPage=e.state.page;}
+    navBack();
+  },{once:false});
+  navDashboard();
+}
+
+const IC={search:'<svg width="W" height="W" viewBox="0 0 24 24" fill="none" stroke="C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>',folder:'<svg width="W" height="W" viewBox="0 0 24 24" fill="none" stroke="C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2z"/></svg>',pen:'<svg width="W" height="W" viewBox="0 0 24 24" fill="none" stroke="C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4z"/></svg>',file:'<svg width="W" height="W" viewBox="0 0 24 24" fill="none" stroke="C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',book:'<svg width="W" height="W" viewBox="0 0 24 24" fill="none" stroke="C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>',gavel:'<svg width="W" height="W" viewBox="0 0 24 24" fill="none" stroke="C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m14 13-7.5 7.5a2.12 2.12 0 0 1-3-3L11 10"/><path d="m16 16 6-6"/><path d="m8 8 6-6"/><path d="m9 7 8 8"/><path d="m21 11-8-8"/></svg>',users:'<svg width="W" height="W" viewBox="0 0 24 24" fill="none" stroke="C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',back:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 5 12 12 19"/></svg>',arrowL:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>',plus:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',clock:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',send:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>',clip:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>',copy:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>',zap:'<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',upload:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>',x:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'};
+const icon=(n,s=24,c='currentColor')=>IC[n].replace(/W/g,s).replace(/C/g,c);
+
+// ── Navigation Stack (Back Button Fix) ───────────────────────
+let _navStack = [];
+let _currentPage = 'dash';
+
+function navBack(){
+  if(_navStack.length > 0){
+    const prev = _navStack.pop();
+    _currentPage = prev;
+    const map={advisor:navAdvisor,cases:navCases,newcase:navNewCase,docs:navDocs,team:navTeam,plans:navPlans,dash:navDashboard};
+    (map[prev]||navDashboard)();
+    window.scrollTo({top:0,behavior:'smooth'});
+  } else {
+    navDashboard();
+  }
+}
+
+function pageHeader(o){
+  const backAction = o.back || 'navBack()';
+  return `<div class="page-header"><div class="topline" style="background:linear-gradient(90deg,transparent,${o.accent},transparent);"></div><div class="ph-row"><div style="display:flex;align-items:center;gap:14px;"><button class="icon-btn" onclick="${backAction}" title="رجوع">${IC.back}</button><div><div class="ph-title">${o.title}${o.dot?'<span class="dot-green"></span>':''}</div><div class="ph-desc">${o.desc}</div></div></div><div style="display:flex;align-items:center;gap:8px;">${o.actions||''}</div></div></div>`;
+}
+
+function navDashboard(){
+  const M=document.getElementById('app-main');
+  const isOwner=USER.role==='owner';
+  const cards=[
+    {key:'advisor',title:'المستشار القانوني',accent:'var(--blue)',ic:icon('search',30,'var(--blue)'),big:1,desc:'مستشارك القانوني الذي يساعدك في فهم القوانين والأنظمة السعودية. اطرح أسئلتك واحصل على استشارات قانونية فورية مدعومة بالمراجع الدقيقة.'},
+    {key:'cases',title:'القضايا',accent:'var(--purple)',ic:icon('folder',26,'var(--purple)'),desc:'إدارة القضايا القانونية بشكل منظم ومحترف، رفع الملفات، الدردشة الذكية، وخطة عمل شاملة للمرافعات.'},
+    {key:'docs',title:'محرر القانون',accent:'var(--green)',ic:icon('pen',26,'var(--green)'),desc:'محرر نصوص ذكي مدعوم بالذكاء الاصطناعي، تدقيق قانوني فوري، قوالب احترافية، واقتراحات ذكية للصياغة القانونية.'},
+  ];
+  const card=(x)=>`<div class="big-card lift" onclick="nav('${x.key}')" style="${x.big?'padding:36px;':''}" onmouseenter="this.style.borderColor='${x.accent}';this.style.boxShadow='0 0 0 1px ${x.accent}33,0 18px 40px ${x.accent}22';" onmouseleave="this.style.borderColor='var(--border)';this.style.boxShadow='none';"><div class="topline" style="background:linear-gradient(90deg,transparent,${x.accent},transparent);"></div><div class="cic" style="background:${x.accent}1A;border:1px solid ${x.accent}40;${x.big?'width:64px;height:64px;':''}">${x.ic}</div><h3 style="${x.big?'font-size:26px;':''}">${x.title}</h3><p>${x.desc}</p><div class="cta" style="color:${x.accent};">استكشف الآن ${IC.arrowL}</div></div>`;
+  M.innerHTML=`<div class="dash-grid fade"><div style="grid-row:span 2;">${card(cards[0])}</div>${card(cards[1])}${card(cards[2])}</div>
+    ${isOwner&&USER.tenant_type==='org'?`<div style="margin-top:18px;"><div class="big-card lift" onclick="nav('team')" style="cursor:pointer;"><div class="cic" style="width:48px;height:48px;background:var(--gold)1A;border:1px solid var(--gold)40;">${icon('users',24,'var(--gold)')}</div><h3 style="font-size:19px;">إدارة الفريق</h3><p>دعوة المحامين والمساعدين وإدارة صلاحياتهم.</p><div class="cta" style="color:var(--gold);">إدارة الفريق ${IC.arrowL}</div></div></div>`:''}`;
+}
+
+function nav(p){
+  if(_currentPage !== p){
+    _navStack.push(_currentPage);
+    if(_navStack.length > 20) _navStack.shift();
+    history.pushState({page:p},'',' ');
+  }
+  _currentPage = p;
+  const map={advisor:navAdvisor,cases:navCases,newcase:navNewCase,docs:navDocs,team:navTeam,plans:navPlans};
+  (map[p]||navDashboard)();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ── Advisor ──
+let advState={messages:[],sources:[],showHistory:false,tab:'all'};
+const SUGGESTIONS=['ما حكم الفسخ التعسفي لعقد العمل؟ وما متوسط التعويضات التي قضت بها المحاكم؟','الشروط القانونية لصحة عقد البيع وأبرز أحكام المحاكم في نزاعات عدم التسليم','كيف تعاملت المحاكم التجارية مع نزاعات خرق عقود المقاولات؟'];
+function navAdvisor(){advState={messages:[],sources:[],showHistory:false,tab:'all'};renderAdvisor();}
+function renderAdvisor(){
+  const M=document.getElementById('app-main'),hist=advState.showHistory;
+  M.innerHTML=`<div class="fade">${pageHeader({accent:'var(--blue)',back:'navBack()',dot:1,title:'<span style="color:var(--blue)">المستشار</span> القانوني',desc:'ابحث في القوانين والأنظمة السعودية بالذكاء الاصطناعي',actions:`<button class="hbtn" onclick="advNew()">${IC.plus} بحث جديد</button><button class="hbtn" onclick="advToggleHist()">${IC.clock} السجل</button>`})}
+    <div class="advisor-grid" style="display:grid;grid-template-columns:${hist?'280px 1fr 260px':'280px 1fr'};gap:16px;margin-top:16px;">
+      <div class="panel" id="src-panel"></div>
+      <div class="chat-box"><div id="chat-body" style="flex:1;overflow-y:auto;padding:24px;"></div>
+        <div style="border-top:1px solid var(--border);padding:16px;"><div style="display:flex;gap:10px;align-items:flex-end;">
+          <button class="btn btn-primary" id="send-btn" onclick="advSend()" style="padding:12px 22px;">${IC.send} إرسال</button>
+          <textarea id="adv-input" rows="1" placeholder="ابحث في القوانين والأنظمة السعودية..." style="flex:1;max-height:120px;" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();advSend();}"></textarea>
+          <button class="icon-btn">${IC.clip}</button></div>
+          <div style="font-size:11px;color:var(--text2);margin-top:8px;text-align:center;">Enter للإرسال · Shift+Enter لسطر جديد</div></div></div>
+      ${hist?`<div class="panel fade"><div class="panel-title">المحادثات السابقة</div><input placeholder="بحث..." style="margin-top:10px;"><div class="src-card lift" style="margin-top:12px;"><div style="font-size:13px;font-weight:700;margin-bottom:6px;">حكم الفسخ التعسفي لعقد العمل</div><div style="font-size:11px;color:var(--text2);">منذ ساعة · ٤ رسائل</div></div></div>`:''}
+    </div></div>`;
+  renderSrcPanel();renderChat();
+}
+function renderSrcPanel(){
+  const p=document.getElementById('src-panel');if(!p)return;
+  if(advState.sources.length===0){p.innerHTML=`<div class="panel-title">المصادر المرجعية</div><div class="panel-sub">المراجع القانونية للبحث</div><div class="empty"><div class="eic" style="width:52px;height:52px;background:var(--card2);color:var(--text2);">${icon('file',26,'var(--text2)')}</div><div style="font-size:14px;font-weight:700;">لا توجد مصادر بعد</div><div style="font-size:12px;color:var(--text2);margin-top:6px;">ستظهر المواد القانونية والأحكام هنا</div></div>`;return;}
+  const S=advState.sources,t=advState.tab,mat=S.filter(s=>s.kind==='مادة').length,huk=S.filter(s=>s.kind==='حكم').length;
+  const filt=S.filter(s=>t==='all'?1:t==='mat'?s.kind==='مادة':s.kind==='حكم');
+  p.innerHTML=`<div class="panel-title">المصادر المرجعية</div><div class="panel-sub">المراجع القانونية للبحث</div><div style="display:flex;gap:6px;margin-bottom:12px;"><button class="src-tab ${t==='all'?'on':''}" onclick="advTab('all')">الكل (${toAr(S.length)})</button><button class="src-tab ${t==='mat'?'on':''}" onclick="advTab('mat')">المواد (${toAr(mat)})</button><button class="src-tab ${t==='huk'?'on':''}" onclick="advTab('huk')">الأحكام (${toAr(huk)})</button></div><div style="display:grid;gap:8px;max-height:440px;overflow-y:auto;">${filt.map(s=>`<div class="src-card lift"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><div style="width:26px;height:26px;border-radius:7px;flex-shrink:0;background:${s.kind==='مادة'?'rgba(37,99,235,.1)':'rgba(16,185,129,.1)'};color:${s.kind==='مادة'?'var(--blue)':'var(--green)'};display:flex;align-items:center;justify-content:center;">${s.kind==='مادة'?icon('book',14,'var(--blue)'):icon('gavel',14,'var(--green)')}</div><div style="font-size:13px;font-weight:700;">${s.num}</div></div><div style="font-size:11px;color:${s.kind==='مادة'?'var(--blue)':'var(--green)'};margin-bottom:4px;">${s.law}</div><div style="font-size:12px;color:var(--text2);line-height:1.7;">${s.text}</div></div>`).join('')}</div>`;
+}
+function renderChat(){
+  const b=document.getElementById('chat-body');if(!b)return;
+  if(advState.messages.length===0&&!advState.loading){b.innerHTML=`<div style="text-align:center;padding:50px 20px;"><div style="width:60px;height:60px;margin:0 auto 18px;border-radius:16px;background:rgba(37,99,235,.1);border:1px solid rgba(37,99,235,.25);color:var(--blue);display:flex;align-items:center;justify-content:center;">${icon('search',28,'var(--blue)')}</div><h3 style="font-size:20px;font-weight:800;margin-bottom:8px;">ابحث في القوانين والأحكام السعودية</h3><p style="color:var(--text2);font-size:14px;margin-bottom:24px;">سيقوم الذكاء الاصطناعي بالبحث وتقديم إجابة مدعومة بالمراجع.</p><div style="display:grid;gap:10px;max-width:560px;margin:0 auto;">${SUGGESTIONS.map(s=>`<button class="suggest lift" onclick="advSend(this.dataset.q)" data-q="${s.replace(/"/g,'&quot;')}">${s}</button>`).join('')}</div></div>`;return;}
+  let html='';
+  advState.messages.forEach(m=>{
+    if(m.role==='user')html+=`<div class="fade" style="margin-bottom:18px;display:flex;justify-content:flex-start;"><div class="bubble-user">${m.text}</div></div>`;
+    else html+=`<div class="fade" style="margin-bottom:18px;display:flex;justify-content:flex-end;"><div class="bubble-ai"><div style="white-space:pre-wrap;font-size:14px;line-height:2;">${m.text}</div>${m.tags&&m.tags.length?`<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">${m.tags.map(t=>`<span class="tag-huk">${t}</span>`).join('')}</div>`:''}<div style="display:flex;align-items:center;justify-content:space-between;margin-top:14px;"><button class="mini-ghost" onclick="navigator.clipboard.writeText(this.closest('.bubble-ai').querySelector('div').textContent);this.textContent='تم ✓';">${IC.copy} نسخ</button><span style="font-size:11px;color:var(--text2);">${m.time||''}</span></div></div></div>`;
+  });
+  if(advState.loading){const s=advState.sources.length>0;html+=`<div class="fade" style="background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:18px;max-width:320px;margin-right:auto;"><div style="font-size:13px;font-weight:700;margin-bottom:12px;">سجل البحث</div>${[['تهيئة البحث',true],['البحث في المواد القانونية',s],['البحث في الأحكام القضائية',s]].map(([l,d])=>`<div style="display:flex;align-items:center;gap:10px;margin-bottom:9px;font-size:12.5px;">${d?'<span style="color:var(--green);">✓</span>':'<span class="spinner" style="width:14px;height:14px;border-color:rgba(37,99,235,.3);border-top-color:var(--blue);"></span>'}<span style="color:${d?'var(--text)':'var(--text2)'};">${l}</span></div>`).join('')}</div>`;}
+  b.innerHTML=html;b.scrollTop=b.scrollHeight;
+}
+function advTab(t){advState.tab=t;renderSrcPanel();}
+function advToggleHist(){advState.showHistory=!advState.showHistory;renderAdvisor();}
+function advNew(){advState.messages=[];advState.sources=[];renderAdvisor();}
+async function advSend(presetQ){
+  const inp=document.getElementById('adv-input'),text=presetQ||(inp?inp.value.trim():'');
+  if(!text)return;
+  advState.messages.push({role:'user',text});advState.loading=true;advState.sources=[];if(inp)inp.value='';renderChat();
+  try{
+    const data=await api('/api/consult','POST',{question:text});
+    advState.sources=(data.sources||[]).map((s,i)=>({id:i,kind:(s.document||'').includes('حكم')||(s.document||'').includes('قضية')?'حكم':'مادة',num:s.document||'مصدر',law:'قاعدة المعرفة',text:(s.content||'').slice(0,160)}));
+    renderSrcPanel();
+    const tags=advState.sources.filter(s=>s.kind==='حكم').slice(0,3).map(s=>s.num);
+    advState.loading=false;advState.messages.push({role:'ai',text:data.answer,tags,time:new Date().toLocaleTimeString('ar')});renderChat();
+  }catch(e){advState.loading=false;advState.messages.push({role:'ai',text:'تعذّر إكمال الطلب: '+e.message,time:''});renderChat();}
+}
+
+// ── Cases ──
+async function navCases(){
+  const M=document.getElementById('app-main');
+  M.innerHTML=`<div class="fade">${pageHeader({accent:'var(--purple)',back:'navBack()',title:'<span style="color:var(--purple)">القضايا</span> القانونية',desc:'جارٍ التحميل...',actions:`<button class="hbtn" style="background:var(--purple);color:#fff;border:none;" onclick="nav('newcase')">${IC.plus} إضافة قضية جديدة</button>`})}<div id="cases-body" style="margin-top:20px;"></div></div>`;
+  try{
+    const d=await api('/api/cases');const cs=d.cases||[];
+    document.querySelector('.ph-desc').textContent=`${toAr(cs.length)} من ${toAr(USER.cases_limit)} قضية`;
+    const body=document.getElementById('cases-body');
+    const statuses={draft:'مسودة',analyzing:'قيد التحليل',analyzed:'تم التحليل',archived:'مؤرشفة'};
+    if(cs.length===0){body.innerHTML=`<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">${Object.values(statuses).map(s=>`<span class="pill-status">${s}</span>`).join('')}</div><div class="empty"><div class="eic" style="width:76px;height:76px;background:rgba(124,58,237,.1);color:var(--purple);">${icon('folder',34,'var(--purple)')}</div><div style="font-size:18px;font-weight:700;">لا توجد قضايا</div><div style="font-size:14px;color:var(--text2);margin-top:6px;">ابدأ بإضافة قضيتك الأولى</div><div style="margin-top:18px;"><button class="btn btn-purple" onclick="nav('newcase')" style="padding:11px 24px;">${IC.plus} إضافة قضية جديدة</button></div></div>`;}
+    else{body.innerHTML=`<div style="display:grid;gap:12px;">${cs.map(c=>`<div class="lift" style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;"><div style="display:flex;justify-content:space-between;align-items:center;"><div style="font-size:16px;font-weight:700;">${c.name}</div><span class="pill-status">${statuses[c.status]||c.status}</span></div><div style="font-size:13px;color:var(--text2);margin-top:6px;">${c.plaintiff||'—'} ضد ${c.defendant||'—'}</div></div>`).join('')}</div>`;}
+  }catch(e){document.getElementById('cases-body').innerHTML=`<div class="err show">${e.message}</div>`;}
+}
+
+// ── New Case ──
+let ncForm={name:'',plaintiff:'',defendant:'',desc:''},ncRep='',ncTouched=false;
+function navNewCase(){ncForm={name:'',plaintiff:'',defendant:'',desc:''};ncRep='';ncTouched=false;renderNewCase();}
+function renderNewCase(){
+  const M=document.getElementById('app-main'),steps=['معلومات القضية','نوع القضية','التطبيق والتوجيه','التحقق'];
+  const need=v=>ncTouched&&!v,bd=v=>need(v)?'var(--red)':'var(--border)';
+  const errLine=v=>need(v)?'<div style="font-size:11.5px;color:var(--red);margin-top:5px;">هذا الحقل مطلوب.</div>':'';
+  M.innerHTML=`<div class="fade" style="max-width:760px;margin:0 auto;"><button class="mini-ghost" onclick="nav('cases')" style="margin-bottom:16px;">‹ العودة للقضايا</button><h1 style="font-size:28px;font-weight:800;margin-bottom:24px;">إنشاء قضية جديدة</h1><div style="display:flex;gap:8px;margin-bottom:28px;">${steps.map((s,i)=>`<div style="flex:1;text-align:center;"><div class="step-num ${i===0?'on':''}">${i+1}</div><div style="font-size:11.5px;color:${i===0?'var(--text)':'var(--text2)'};">${s}</div></div>`).join('')}</div><div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px;"><div class="field"><label>اسم القضية *</label><input value="${ncForm.name}" oninput="ncForm.name=this.value" placeholder="مثال: نزاع شركة محاسبية" style="border-color:${bd(ncForm.name)}">${errLine(ncForm.name)}</div><div class="field"><label>المدعي *</label><input value="${ncForm.plaintiff}" oninput="ncForm.plaintiff=this.value" placeholder="اسم المدعي أو الشركة" style="border-color:${bd(ncForm.plaintiff)}">${errLine(ncForm.plaintiff)}</div><div class="field"><label>المدعى عليه *</label><input value="${ncForm.defendant}" oninput="ncForm.defendant=this.value" placeholder="اسم الخصم أو الشركة" style="border-color:${bd(ncForm.defendant)}">${errLine(ncForm.defendant)}</div><div class="field"><label>تمثّل *</label><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">${['المدعي','المدعى عليه'].map(r=>`<button onclick="ncRep='${r}';renderNewCase()" style="padding:14px;border-radius:12px;cursor:pointer;font-weight:600;font-size:14px;border:1px solid ${ncRep===r?'var(--purple)':'var(--border)'};background:${ncRep===r?'rgba(124,58,237,.12)':'var(--card2)'};color:${ncRep===r?'var(--purple)':'var(--text)'};">${r}</button>`).join('')}</div></div><div class="field"><label>وصف النزاع بالتفصيل *</label><textarea id="nc-desc" rows="5" oninput="ncForm.desc=this.value" placeholder="اشرح تفاصيل النزاع: ما الوقائع؟ ما المطالبات؟ هل توجد مواعيد قضائية قريبة؟" style="border-color:${bd(ncForm.desc)};line-height:1.8;"></textarea>${need(ncForm.desc)?errLine(ncForm.desc):'<div style="font-size:11.5px;color:var(--text2);margin-top:5px;">تفاصيل أكثر تساعد في تصنيف وتحليل أدق</div>'}</div><button class="btn btn-purple btn-full" onclick="ncSave()" style="margin-top:8px;">حفظ القضية</button></div></div>`;
+  setTimeout(()=>{const d=document.getElementById('nc-desc');if(d)d.value=ncForm.desc;},0);
+}
+async function ncSave(){
+  ncTouched=true;
+  if(!(ncForm.name&&ncForm.plaintiff&&ncForm.defendant&&ncForm.desc)){renderNewCase();return;}
+  try{await api('/api/cases','POST',{name:ncForm.name,plaintiff:ncForm.plaintiff,defendant:ncForm.defendant,represents:ncRep,description:ncForm.desc});alert('تم حفظ القضية ✓');nav('cases');}
+  catch(e){alert('خطأ: '+e.message);}
+}
+
+// ── Docs ──
+// ══════════════════════════════════════════════════════
+// SMART DOCS MODULE — إنشاء مستندات ذكية بالذكاء الاصطناعي
+// ══════════════════════════════════════════════════════
+let docs=[];
+// حالة المستندات الذكية (في الذاكرة)
+let DS={schema:null,formValues:{},generatedDoc:'',docTitle:'',view:'list'};
+
+// ── استدعاء الباكند الآمن بدل مزود AI من المتصفح ──
+async function callAI(endpoint,payload){
+  const res=await api(endpoint,'POST',payload);
+  return res;
+}
+
+// ── تحليل وصف المستخدم وتوليد schema ──
+async function analyzeDocPrompt(userPrompt,onStep){
+  onStep(0);await sleep(350);onStep(1);
+  const sys=`أنت محلل قانوني. مهمتك تحليل الطلب وإرجاع JSON صالح فقط بدون أي نص إضافي.
+أنواع الحقول المدعومة: text, number, date, textarea, select, checkbox, radio, email, phone, currency, repeater
+استخدم repeater للبيانات المتكررة (أطراف متعددة, منتجات, دفعات, شهود, بنود).
+قواعد: لا تضع حقولاً غير ذات صلة، استخرج كل بيانات موجودة في الوصف إلى value، الحقول الجوهرية required:true.
+JSON المطلوب:
+{"documentType":"camelCase","documentTitle":"العنوان","documentCategory":"contract|agreement|letter|policy|minutes|notice|other","confidence":0.0-1.0,"jurisdiction":"الدولة أو غير محدد","detectedParties":[],"summary":"وصف موجز","extractedData":{},"missingRequiredFields":[],"fields":[{"name":"fieldName","label":"التسمية","type":"text","required":true,"value":null,"placeholder":"نص توضيحي","options":[],"fields":[]}]}`;
+  const data=await callAI('/api/ai/legal-schema',{prompt:userPrompt});
+  onStep(2);await sleep(300);onStep(3);await sleep(300);onStep(4);
+  return data.schema;
+}
+
+// ── توليد المستند النهائي ──
+async function generateDocContent(schema,formValues){
+  const sys=`أنت متخصص في صياغة المستندات القانونية باللغة العربية. صغ مستنداً احترافياً منظماً بعناوين وبنود.
+لا تستخدم markdown. استخدم أسطراً فارغة للفصل بين الأقسام. اختر البنود المناسبة لهذا النوع فقط.
+في النهاية أضف: "ملاحظة: هذا المستند صياغة أولية ويُنصح بمراجعة متخصص قانوني قبل الاعتماد الرسمي."`;
+  const data=await callAI('/api/ai/legal-document',{schema,formValues});
+  if(data.doc_id)DS.docId=data.doc_id;
+  return data.document;
+}
+
+// ── فحص المستند ──
+async function inspectDocContent(docText,schema){
+  const sys=`أنت مراجع قانوني. راجع المستند وأعطني JSON فقط بدون نص إضافي:
+{"missingData":[],"weakClauses":[],"conflictingClauses":[],"risks":[],"improvements":[],"legalReviewNeeded":true,"overallScore":0,"verdict":""}`;
+  try{
+    const data=await callAI('/api/ai/inspect-document',{docText,schema});
+    return data.inspection;
+  }catch(e){
+    return {missingData:[],weakClauses:[],conflictingClauses:[],risks:['تعذّر التحليل: '+e.message],improvements:['يُنصح بالمراجعة اليدوية'],legalReviewNeeded:true,overallScore:70,verdict:'المستند يحتاج مراجعة'};
+  }
+}
+
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+
+// ── صفحة قائمة المستندات ──
+async function navDocs(){
+  DS={schema:null,formValues:{},generatedDoc:'',docTitle:'',view:'list'};
+  const M=document.getElementById('app-main');
+  M.innerHTML=`<div class="fade">${pageHeader({accent:'var(--gold)',back:'navBack()',title:'<span style="color:var(--gold)">مستنداتي</span> الذكية',desc:'جارٍ التحميل...',actions:`<button class="hbtn" style="background:var(--gold);color:#fff;border:none;" onclick="openDocPromptModal()">✨ مستند جديد</button>`})}<div id="docs-body" style="margin-top:20px;"></div></div>`;
+  try{const d=await api('/api/documents');docs=d.documents||[];document.querySelector('.ph-desc').textContent=`${toAr(docs.length)} من ${toAr(USER.docs_limit)} مستند`;renderDocsBody();}
+  catch(e){document.getElementById('docs-body').innerHTML=`<div class="err show">${e.message}</div>`;}
+}
+
+function renderDocsBody(){
+  const DB=document.getElementById('docs-body');
+  DB.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;">
+    <div class="lift" onclick="openDocPromptModal()" style="background:var(--card);border:1.5px dashed rgba(245,158,11,.5);border-radius:16px;padding:24px;cursor:pointer;text-align:center;min-height:160px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+      <div style="width:46px;height:46px;border-radius:12px;background:var(--gold);color:#fff;display:flex;align-items:center;justify-content:center;margin-bottom:12px;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+      <div style="font-weight:700;font-size:15px;">مستند ذكي جديد</div>
+      <div style="font-size:12px;color:var(--text2);margin-top:4px;">صف ما تريده، النظام يتولى الباقي</div>
+    </div>
+    ${docs.map(d=>`<div class="doc-card lift fade">${icon('file',26,'var(--green)')}<div style="font-weight:700;font-size:14px;margin-top:10px;">${d.title}</div><div class="doc-card-kind">${d.kind||'مستند'}</div></div>`).join('')}
+  </div>
+  ${docs.length===0?`<div style="margin-top:30px;"><div class="empty"><div class="eic" style="width:76px;height:76px;background:rgba(245,158,11,.1);color:var(--gold);">${icon('file',34,'var(--gold)')}</div><div style="font-size:18px;font-weight:700;">لا توجد مستندات بعد</div><div style="font-size:14px;color:var(--text2);margin-top:6px;">ابدأ بإنشاء مستندك الأول</div><div style="font-size:13px;color:var(--gold);font-style:italic;margin-top:12px;">«القانون سلطان»</div></div></div>`:''}`;
+}
+
+// ── Modal: وصف المستخدم ──
+const DOC_EXAMPLES=[
+  'اتفاقية عدم إفصاح بين شركة ألفا وشركة بيتا لمدة سنتين',
+  'عقد توريد شاشات بين شركتي وشركة توزيع',
+  'إنذار قانوني لمستأجر متأخر في السداد',
+  'لائحة داخلية للموظفين في شركة تقنية',
+  'مذكرة تفاهم بين جامعة ومؤسسة صحية',
+  'عقد عمل لمدة سنة لمهندس برمجيات براتب ١٢٠٠٠ ريال',
+];
+function openDocPromptModal(){
+  const ov=document.createElement('div');ov.className='modal-overlay';ov.id='doc-modal';ov.onclick=e=>{if(e.target===ov&&!ov.dataset.locked)ov.remove();};
+  ov.innerHTML=`<div class="modal doc-modal-wide fade" style="max-height:90vh;overflow-y:auto;">
+    <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--blue),var(--purple));border-radius:20px 20px 0 0;"></div>
+    <button class="icon-btn" style="position:absolute;top:14px;left:14px;" onclick="document.getElementById('doc-modal').remove()" id="doc-modal-close">${IC.x}</button>
+    <div id="doc-modal-body">
+      <div style="width:48px;height:48px;border-radius:13px;background:rgba(124,58,237,.12);color:var(--purple);display:flex;align-items:center;justify-content:center;margin-bottom:14px;">${icon('pen',26,'var(--purple)')}</div>
+      <h3 style="font-size:20px;font-weight:800;margin-bottom:5px;">إنشاء مستند ذكي</h3>
+      <p style="color:var(--text2);font-size:13px;margin-bottom:16px;">اكتب وصفاً للمستند — النظام سيحلله ويبني النموذج المناسب تلقائياً</p>
+      <textarea id="doc-prompt-text" rows="4" class="dyn-input" placeholder="مثال: أريد اتفاقية عدم إفصاح بين شركة ألفا وشركة بيتا لمدة سنتين في السعودية..." oninput="document.getElementById('dp-count').textContent=this.value.length+' حرف'" onkeydown="if(event.key==='Enter'&&event.ctrlKey)startDocAnalysis()"></textarea>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text2);margin:6px 2px 12px;"><span id="dp-count">0 حرف</span><span>Ctrl+Enter للإرسال</span></div>
+      <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px;">${DOC_EXAMPLES.map(ex=>`<button class="mini-ghost" style="font-size:12px;" onclick="document.getElementById('doc-prompt-text').value='${ex}';document.getElementById('dp-count').textContent='${ex.length} حرف';">${ex.length>38?ex.slice(0,38)+'…':ex}</button>`).join('')}</div>
+      <button class="btn btn-purple btn-full" id="doc-analyze-btn" onclick="startDocAnalysis()">🔍 تحليل وإنشاء النموذج</button>
+    </div>
+  </div>`;
+  document.body.appendChild(ov);
+}
+
+// ── بدء تحليل الطلب ──
+async function startDocAnalysis(){
+  const t=document.getElementById('doc-prompt-text').value.trim();if(!t)return;
+  const ov=document.getElementById('doc-modal');ov.dataset.locked='1';
+  document.getElementById('doc-modal-close').style.display='none';
+  const STEPS=['جاري فهم نوع المستند...','جاري استخراج المعلومات...','جاري تحديد البيانات الناقصة...','جاري إنشاء النموذج المناسب...','اكتمل التحليل ✓'];
+  let curStep=-1;
+  document.getElementById('doc-modal-body').innerHTML=`<div style="text-align:center;margin-bottom:20px;"><div style="font-size:32px;margin-bottom:8px;">⚙️</div><div style="font-size:17px;font-weight:800;">جاري التحليل الذكي</div><div style="font-size:13px;color:var(--text2);margin-top:4px;">يرجى الانتظار...</div></div><div class="ai-steps">${STEPS.map((_,i)=>`<div class="ai-step-row" id="astep-${i}"><div class="ai-step-dot wait" id="adot-${i}">·</div><span id="atext-${i}" style="color:var(--text2);">${STEPS[i]}</span></div>`).join('')}</div>`;
+  function onStep(i){
+    if(curStep>=0){document.getElementById('adot-'+curStep).className='ai-step-dot done';document.getElementById('adot-'+curStep).textContent='✓';document.getElementById('atext-'+curStep).style.color='var(--green)';}
+    curStep=i;
+    if(i<STEPS.length){const d=document.getElementById('adot-'+i);if(d){d.className='ai-step-dot active';d.innerHTML='<span class="spinner" style="width:12px;height:12px;border-width:2px;"></span>';document.getElementById('atext-'+i).style.color='var(--text)';}}
+  }
+  try{
+    DS.schema=await analyzeDocPrompt(t,onStep);
+    DS.formValues={};
+    (DS.schema.fields||[]).forEach(f=>{if(f.value!==null&&f.value!==undefined&&f.value!=='')DS.formValues[f.name]=f.value;if(f.type==='repeater')DS.formValues[f.name]=DS.formValues[f.name]||[{}];});
+    document.getElementById('doc-modal').remove();
+    showDocFormView();
+  }catch(e){
+    document.getElementById('doc-modal-body').innerHTML=`<div class="err show">⚠️ ${e.message}</div><button class="btn btn-primary btn-full" style="margin-top:12px;" onclick="document.getElementById('doc-modal').remove()">إغلاق</button>`;
+  }
+}
+
+// ── عرض صفحة النموذج الديناميكي ──
+function showDocFormView(){
+  const M=document.getElementById('app-main');
+  const s=DS.schema;
+  const missingReq=(s.fields||[]).filter(f=>f.required&&f.type!=='repeater'&&!DS.formValues[f.name]);
+  M.innerHTML=`<div class="fade">
+    ${pageHeader({accent:'var(--green)',back:'navDocs()',title:`<span style="color:var(--green)">${s.documentTitle||'مستند'}</span>`,desc:s.summary||'',actions:''})}
+    <div style="max-width:700px;margin:20px auto 0;">
+      <div class="doc-meta-banner">
+        <div class="doc-type-pill">📄 ${s.documentTitle}</div>
+        <div style="font-size:13px;color:var(--text2);">${s.summary}</div>
+        <div style="margin-top:8px;"><div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text2);"><span>مستوى الثقة في التحليل</span><span>${Math.round((s.confidence||.85)*100)}%</span></div><div class="conf-bar"><div class="conf-fill" style="width:${(s.confidence||.85)*100}%;"></div></div></div>
+        ${s.detectedParties?.length?`<div style="font-size:12px;color:var(--text2);margin-top:7px;">الأطراف: ${s.detectedParties.join(' • ')}</div>`:''}
+        ${s.jurisdiction&&s.jurisdiction!=='غير محدد'?`<div style="font-size:12px;color:var(--text2);margin-top:3px;">النظام القانوني: ${s.jurisdiction}</div>`:''}
+      </div>
+      <div id="dyn-form-fields">${renderDynFields(s.fields||[])}</div>
+      ${missingReq.length?`<div class="missing-bar"><span>⚠️</span><div><strong>بيانات مطلوبة ناقصة:</strong> ${missingReq.map(f=>f.label).join(' • ')}</div></div>`:''}
+      <div class="legal-disclaimer"><span>ℹ️</span><span>هذه صياغة أولية يُنصح بمراجعتها من مختص قانوني قبل الاعتماد الرسمي.</span></div>
+      <button class="btn btn-green btn-full" id="gen-doc-btn" style="margin-top:18px;font-size:16px;" onclick="startGenerateDoc()" ${missingReq.length?'disabled':''}>📝 توليد المستند القانوني</button>
+    </div>
+  </div>`;
+  // ربط أحداث الحقول
+  bindDynFields(s.fields||[]);
+}
+
+// ── رسم الحقول الديناميكية ──
+function renderDynFields(fields){
+  return fields.map(f=>{
+    const val=DS.formValues[f.name];
+    const isPre=!!(f.value&&val===f.value);
+    const reqMark=f.required?`<span class="req">*</span>`:'';
+    const autoTag=isPre?`<span class="auto-tag">✓ مستخرج تلقائياً</span>`:'';
+    let inp='';
+    if(f.type==='repeater'){
+      inp=renderRepeater(f);
+    } else if(f.type==='textarea'){
+      inp=`<textarea class="dyn-input${isPre?' prefilled':''}" id="df-${f.name}" placeholder="${f.placeholder||''}" rows="3">${val||''}</textarea>`;
+    } else if(f.type==='select'){
+      inp=`<select class="dyn-input dyn-select${isPre?' prefilled':''}" id="df-${f.name}"><option value="">— اختر —</option>${(f.options||[]).map(o=>`<option value="${o}"${val===o?' selected':''}>${o}</option>`).join('')}</select>`;
+    } else if(f.type==='checkbox'||f.type==='radio'){
+      const sel=val||(f.type==='checkbox'?[]:null);
+      inp=`<div class="opt-group" id="df-${f.name}">${(f.options||[]).map((o,i)=>{const on=f.type==='checkbox'?(Array.isArray(sel)&&sel.includes(o)):(sel===o);return `<label class="opt-item${on?' on':''}" data-val="${o}" data-type="${f.type}"><input type="${f.type}" ${on?'checked':''} style="display:none;">${o}</label>`}).join('')}</div>`;
+    } else if(f.type==='date'){
+      inp=`<input type="date" class="dyn-input${isPre?' prefilled':''}" id="df-${f.name}" value="${val||''}">`;
+    } else if(f.type==='currency'){
+      inp=`<div style="position:relative;"><input type="number" class="dyn-input${isPre?' prefilled':''}" id="df-${f.name}" placeholder="${f.placeholder||''}" value="${val||''}" style="padding-left:40px;"><span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--text2);">ر.س</span></div>`;
+    } else if(f.type==='email'){
+      inp=`<input type="email" class="dyn-input${isPre?' prefilled':''}" id="df-${f.name}" placeholder="${f.placeholder||''}" value="${val||''}">`;
+    } else if(f.type==='phone'){
+      inp=`<input type="tel" class="dyn-input${isPre?' prefilled':''}" id="df-${f.name}" placeholder="${f.placeholder||'+966XXXXXXXXX'}" value="${val||''}">`;
+    } else if(f.type==='number'){
+      inp=`<input type="number" class="dyn-input${isPre?' prefilled':''}" id="df-${f.name}" placeholder="${f.placeholder||''}" value="${val||''}">`;
+    } else {
+      inp=`<input type="text" class="dyn-input${isPre?' prefilled':''}" id="df-${f.name}" placeholder="${f.placeholder||''}" value="${val||''}">`;
+    }
+    const hint=f.placeholder&&f.type!=='select'&&f.type!=='checkbox'&&f.type!=='radio'?`<div class="dyn-hint">${f.placeholder}</div>`:'';
+    return `<div class="dyn-field"><label class="dyn-label">${reqMark}${f.label}${autoTag}</label>${inp}${hint}</div>`;
+  }).join('');
+}
+
+// ── رسم Repeater ──
+function renderRepeater(f){
+  const items=DS.formValues[f.name]||[{}];
+  const cols=(f.fields||[]).length>=2?'rep-grid':'rep-grid single';
+  return `<div class="repeater-box" id="rep-${f.name}">${items.map((item,idx)=>`<div class="rep-item" id="repitem-${f.name}-${idx}"><div class="rep-header"><span class="rep-label">${f.label} #${idx+1}</span>${items.length>1?`<button class="rep-remove" onclick="repRemove('${f.name}',${idx})">×</button>`:''}</div><div class="${cols}">${(f.fields||[]).map(sf=>{const sv=item[sf.name]||'';return `<div><label class="dyn-label" style="font-size:12px;">${sf.required?'<span class="req">*</span>':''}${sf.label}</label><input type="text" class="dyn-input" style="padding:9px 11px;font-size:13px;" data-rep="${f.name}" data-idx="${idx}" data-sub="${sf.name}" value="${sv}" placeholder="${sf.placeholder||''}"></div>`}).join('')}</div></div>`).join('')}</div><button class="rep-add" onclick="repAdd('${f.name}')">+ إضافة ${f.label} آخر</button>`;
+}
+
+// ── ربط أحداث الحقول ──
+function bindDynFields(fields){
+  fields.forEach(f=>{
+    if(f.type==='repeater'){
+      // الأحداث تُعالَج بـ onclick المضمّنة
+    } else if(f.type==='checkbox'||f.type==='radio'){
+      const grp=document.getElementById('df-'+f.name);
+      if(!grp)return;
+      grp.querySelectorAll('.opt-item').forEach(lbl=>{
+        lbl.addEventListener('click',()=>{
+          const v=lbl.dataset.val,t=lbl.dataset.type;
+          if(t==='radio'){
+            grp.querySelectorAll('.opt-item').forEach(l=>l.classList.remove('on'));
+            lbl.classList.add('on');
+            DS.formValues[f.name]=v;
+          } else {
+            lbl.classList.toggle('on');
+            const cur=Array.isArray(DS.formValues[f.name])?[...DS.formValues[f.name]]:[];
+            DS.formValues[f.name]=lbl.classList.contains('on')?[...cur,v]:cur.filter(x=>x!==v);
+          }
+          refreshGenBtn();
+        });
+      });
+    } else {
+      const el=document.getElementById('df-'+f.name);
+      if(!el)return;
+      el.addEventListener('input',()=>{DS.formValues[f.name]=el.value;refreshGenBtn();});
+      el.addEventListener('change',()=>{DS.formValues[f.name]=el.value;refreshGenBtn();});
+    }
+    // repeater sub-inputs
+    document.querySelectorAll(`[data-rep="${f.name}"]`).forEach(inp=>{
+      inp.addEventListener('input',()=>{
+        const idx=+inp.dataset.idx,sub=inp.dataset.sub,rep=inp.dataset.rep;
+        if(!DS.formValues[rep])DS.formValues[rep]=[{}];
+        DS.formValues[rep][idx]={...DS.formValues[rep][idx],[sub]:inp.value};
+      });
+    });
+  });
+  // ربط أحداث الـ repeater sub-inputs الجديدة
+  document.querySelectorAll('[data-rep]').forEach(inp=>{
+    inp.addEventListener('input',()=>{
+      const idx=+inp.dataset.idx,sub=inp.dataset.sub,rep=inp.dataset.rep;
+      if(!DS.formValues[rep])DS.formValues[rep]=[{}];
+      if(!DS.formValues[rep][idx])DS.formValues[rep][idx]={};
+      DS.formValues[rep][idx][sub]=inp.value;
+    });
+  });
+}
+
+function refreshGenBtn(){
+  const s=DS.schema;if(!s)return;
+  const missing=(s.fields||[]).filter(f=>f.required&&f.type!=='repeater'&&!DS.formValues[f.name]);
+  const btn=document.getElementById('gen-doc-btn');if(btn)btn.disabled=missing.length>0;
+}
+
+// ── Repeater: إضافة / حذف ──
+function repAdd(fname){
+  if(!DS.formValues[fname])DS.formValues[fname]=[{}];
+  DS.formValues[fname].push({});
+  const f=DS.schema.fields.find(x=>x.name===fname);
+  if(f){document.getElementById('rep-'+fname).outerHTML=renderRepeater(f);rebindRepInputs(fname,f);}
+}
+function repRemove(fname,idx){
+  if(!DS.formValues[fname]||DS.formValues[fname].length<=1)return;
+  DS.formValues[fname].splice(idx,1);
+  const f=DS.schema.fields.find(x=>x.name===fname);
+  if(f){const old=document.getElementById('rep-'+fname);if(old)old.outerHTML=renderRepeater(f);rebindRepInputs(fname,f);}
+}
+function rebindRepInputs(fname,f){
+  document.querySelectorAll(`[data-rep="${fname}"]`).forEach(inp=>{
+    inp.addEventListener('input',()=>{
+      const idx=+inp.dataset.idx,sub=inp.dataset.sub;
+      if(!DS.formValues[fname][idx])DS.formValues[fname][idx]={};
+      DS.formValues[fname][idx][sub]=inp.value;
+    });
+  });
+}
+
+// ── توليد المستند ──
+async function startGenerateDoc(){
+  const btn=document.getElementById('gen-doc-btn');
+  if(btn){btn.disabled=true;btn.innerHTML='<span class="spinner"></span> جاري التوليد...';}
+  try{
+    DS.generatedDoc=await generateDocContent(DS.schema,DS.formValues);
+    showDocEditorView();
+  }catch(e){
+    if(btn){btn.disabled=false;btn.innerHTML='📝 توليد المستند القانوني';}
+    alert('خطأ في التوليد: '+e.message);
+  }
+}
+
+// ── عرض المحرر ──
+function showDocEditorView(){
+  const M=document.getElementById('app-main');
+  M.innerHTML=`<div class="fade doc-editor-wrap">
+    <div class="editor-bar">
+      <button class="ebar-btn" onclick="showDocFormView()">← تعديل البيانات</button>
+      <div class="ebar-sep"></div>
+      <button class="ebar-btn primary" id="save-doc-btn" onclick="saveDocLocal()">💾 حفظ</button>
+      <span style="font-size:12px;color:var(--text2);display:flex;align-items:center;gap:5px;margin-right:auto;" id="save-status"><span class="save-dot"></span>محفوظ</span>
+      <div class="ebar-sep"></div>
+      <button class="ebar-btn" onclick="copyDocContent()" id="copy-doc-btn">📋 نسخ</button>
+      <button class="ebar-btn" onclick="downloadDocTxt()">⬇️ تنزيل .txt</button>
+      <button class="ebar-btn" id="inspect-btn" onclick="runDocInspect()">🔍 فحص المستند</button>
+    </div>
+    <div class="doc-content-box">
+      <div class="doc-editable" id="doc-editable" contenteditable="true" dir="rtl" onInput="onDocEdit()"></div>
+    </div>
+    <div id="inspect-result-wrap"></div>
+  </div>`;
+  const ed=document.getElementById('doc-editable');
+  if(ed)ed.innerText=DS.generatedDoc;
+}
+
+function onDocEdit(){
+  const ed=document.getElementById('doc-editable');
+  if(ed)DS.generatedDoc=ed.innerText;
+  const s=document.getElementById('save-status');
+  if(s)s.innerHTML='<span class="save-dot" style="background:var(--gold);"></span>غير محفوظ';
+}
+async function saveDocLocal(){
+  DS.savedDoc=DS.generatedDoc;
+  try{
+    const r=await api('/api/documents','POST',{title:DS.schema?.documentTitle||'مستند قانوني',kind:DS.schema?.documentCategory||'وثيقة ذكية',content:DS.generatedDoc,schema:DS.schema,formValues:DS.formValues,doc_id:DS.docId||null});
+    if(r.doc_id)DS.docId=r.doc_id;
+  }catch(e){console.warn('save failed',e);}
+  const s=document.getElementById('save-status');if(s)s.innerHTML='<span class="save-dot"></span>محفوظ';
+}
+function copyDocContent(){
+  navigator.clipboard?.writeText(DS.generatedDoc).then(()=>{const b=document.getElementById('copy-doc-btn');if(b){b.textContent='✓ تم النسخ';setTimeout(()=>b.textContent='📋 نسخ',2000);}});
+}
+function downloadDocTxt(){
+  const blob=new Blob([DS.generatedDoc],{type:'text/plain;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=(DS.schema?.documentTitle||'مستند')+'.txt';a.click();URL.revokeObjectURL(url);
+}
+
+// ── فحص المستند ──
+async function runDocInspect(){
+  const btn=document.getElementById('inspect-btn');
+  if(btn){btn.disabled=true;btn.innerHTML='<span class="spinner" style="border-top-color:var(--purple);border-color:rgba(124,58,237,.3);"></span> جاري الفحص...';}
+  const wrap=document.getElementById('inspect-result-wrap');
+  if(wrap)wrap.innerHTML=`<div class="inspect-wrap" style="text-align:center;padding:30px;"><span class="spinner" style="border-top-color:var(--purple);"></span><div style="margin-top:12px;color:var(--text2);font-size:14px;">جاري تحليل المستند...</div></div>`;
+  try{
+    const r=await inspectDocContent(DS.generatedDoc,DS.schema);
+    const sc=r.overallScore||0;
+    const col=sc>=80?'var(--green)':sc>=60?'var(--gold)':'var(--red)';
+    const section=(label,items,cls)=>items?.length?`<div class="inspect-section"><div class="inspect-slabel">${label}</div>${items.map(it=>`<div class="inspect-item ${cls}"><span class="ibadge ${cls}">${label.split(' ')[0]}</span><br>${it}</div>`).join('')}</div>`:'';
+    wrap.innerHTML=`<div class="inspect-wrap fade">
+      <div style="font-size:15px;font-weight:800;margin-bottom:14px;display:flex;align-items:center;gap:8px;">🔍 نتيجة الفحص القانوني</div>
+      <div class="inspect-score">
+        <div class="iscore-num" style="color:${col};">${sc}</div>
+        <div><div style="font-size:12px;color:var(--text2);">تقييم المستند من 100</div><div class="iscore-verdict">${r.verdict}</div>${r.legalReviewNeeded?'<span class="ibadge warn" style="margin-top:5px;display:inline-block;">⚠️ يحتاج مراجعة قانونية</span>':''}</div>
+      </div>
+      ${section('ناقص',r.missingData,'warn')}
+      ${section('ضعيف',r.weakClauses,'warn')}
+      ${section('تعارض',r.conflictingClauses,'danger')}
+      ${section('خطر',r.risks,'danger')}
+      ${section('اقتراح',r.improvements,'ok')}
+    </div>`;
+  }catch(e){wrap.innerHTML=`<div class="err show">خطأ في الفحص: ${e.message}</div>`;}
+  if(btn){btn.disabled=false;btn.innerHTML='🔍 فحص المستند';}
+}
+
+// ── Team (owner only) ──
+async function navTeam(){
+  const M=document.getElementById('app-main');
+  M.innerHTML=`<div class="fade">${pageHeader({accent:'var(--gold)',back:'navBack()',title:'إدارة الفريق',desc:'جارٍ التحميل...',actions:`<button class="hbtn" style="background:var(--gold);color:#fff;border:none;" onclick="openInvite()">${IC.plus} دعوة عضو</button>`})}<div id="team-body" style="margin-top:20px;"></div></div>`;
+  try{
+    const d=await api('/api/team');
+    document.querySelector('.ph-desc').textContent=`${toAr(d.members.length)} من ${toAr(d.seats_limit)} مقعد`;
+    document.getElementById('team-body').innerHTML=`<div class="panel"><table><thead><tr><th>الاسم</th><th>البريد</th><th>الدور</th><th>الحالة</th><th></th></tr></thead><tbody>${d.members.map(m=>`<tr><td style="font-weight:600;">${m.name}</td><td style="color:var(--text2);">${m.email}</td><td><span class="role-badge" style="background:${ROLE_COLOR[m.role]}22;color:${ROLE_COLOR[m.role]};">${ROLE_AR[m.role]}</span></td><td>${m.active?'<span style="color:var(--green);">نشط</span>':'<span style="color:var(--text2);">معطّل</span>'}</td><td>${m.role!=='owner'&&m.active?`<button class="mini-ghost" onclick="deactivate(${m.id})">تعطيل</button>`:''}</td></tr>`).join('')}</tbody></table></div>`;
+  }catch(e){document.getElementById('team-body').innerHTML=`<div class="err show">${e.message}</div>`;}
+}
+function openInvite(){
+  const ov=document.createElement('div');ov.className='modal-overlay';ov.id='inv-modal';ov.onclick=e=>{if(e.target===ov)ov.remove();};
+  ov.innerHTML=`<div class="modal fade"><button class="icon-btn" style="position:absolute;top:16px;left:16px;" onclick="document.getElementById('inv-modal').remove()">${IC.x}</button><h3 style="font-size:20px;font-weight:800;margin-bottom:16px;">دعوة عضو جديد</h3><div class="field"><label>البريد الإلكتروني</label><input id="inv-email" type="email" placeholder="member@email.com"></div><div class="field"><label>الدور</label><select id="inv-role"><option value="lawyer">محامي</option><option value="assistant">مساعد</option></select></div><button class="btn btn-gold btn-full" id="inv-btn" onclick="sendInvite()">إرسال الدعوة</button></div>`;
+  document.body.appendChild(ov);
+}
+async function sendInvite(){
+  const email=document.getElementById('inv-email').value.trim(),role=document.getElementById('inv-role').value;
+  if(!email)return;
+  const b=document.getElementById('inv-btn');b.disabled=true;b.innerHTML='<span class="spinner"></span>';
+  try{const d=await api('/api/team/invite','POST',{email,role});document.getElementById('inv-modal').remove();alert('تم إنشاء الدعوة ✓\nرابط الدعوة:\n'+d.invite_link);navTeam();}
+  catch(e){b.disabled=false;b.innerHTML='إرسال الدعوة';alert('خطأ: '+e.message);}
+}
+async function deactivate(id){if(!confirm('تعطيل هذا العضو؟'))return;try{await api(`/api/team/${id}/deactivate`,'POST');navTeam();}catch(e){alert(e.message);}}
+
+// ── Plans ──
+async function navPlans(){
+  const M=document.getElementById('app-main');
+  M.innerHTML=`<div class="fade">${pageHeader({accent:'var(--gold)',back:'navBack()',title:'الباقات والاشتراك',desc:'اختر الباقة المناسبة لاحتياجك'})}<div id="plans-body" style="margin-top:20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;"></div></div>`;
+  try{
+    const d=await api('/api/plans');
+    document.getElementById('plans-body').innerHTML=d.plans.map(p=>{
+      const cur=p.code===USER.plan_code;
+      return `<div class="plan-card" style="${cur?'border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)44;':''}"><div style="font-size:13px;color:var(--text2);">${p.name_ar}</div><div style="font-size:34px;font-weight:800;margin:8px 0;">${p.price_month==0?'مجاناً':toAr(p.price_month)+' <span style=\"font-size:14px;color:var(--text2);\">ر.س/شهر</span>'}</div><div style="display:grid;gap:8px;margin:16px 0;font-size:13.5px;color:var(--text2);"><div>✓ ${toAr(p.cases_limit)} استشارة/قضية شهرياً</div><div>✓ ${toAr(p.docs_limit)} مستند</div><div>✓ ${toAr(p.seats_limit)} ${p.seats_limit>1?'مقاعد':'مقعد'}</div></div><button class="btn ${cur?'':'btn-gold'} btn-full" ${cur?'disabled style="background:var(--card2);color:var(--text2);"':''}>${cur?'باقتك الحالية':'ترقية'}</button></div>`;
+    }).join('');
+  }catch(e){document.getElementById('plans-body').innerHTML=`<div class="err show">${e.message}</div>`;}
+}
+
+(async function(){applyThemeIcon();if(TOKEN){try{USER=await api('/api/auth/me');USER.onboarded?enterApp():startOnboarding();}catch(e){showScreen('login');}}else showScreen('login');})();
+</script>
+</body>
+</html>
